@@ -1,6 +1,6 @@
 /**
  * View: ProfileView
- * Controla os elementos da tela de perfil e informações do usuário.
+ * Controla os elementos da tela de perfil, informações do usuário e tema.
  */
 export class ProfileView {
   constructor() {
@@ -10,6 +10,7 @@ export class ProfileView {
     this.profileAvatar = document.getElementById('profileAvatar');
     this.profileName = document.getElementById('profileName');
     this.profileHandle = document.getElementById('profileHandle');
+    this.restartOnboardingBtn = document.getElementById('btnRestartOnboarding');
   }
 
   renderUserProfile(profile) {
@@ -17,10 +18,10 @@ export class ProfileView {
       this.userGreeting.textContent = `Olá, ${profile.name} 🌸`;
     }
     if (this.topAvatar) {
-      this.topAvatar.textContent = profile.initials;
+      this.topAvatar.textContent = profile.initials || 'AJ';
     }
     if (this.profileAvatar) {
-      this.profileAvatar.textContent = profile.initials;
+      this.profileAvatar.textContent = profile.initials || 'AJ';
     }
     if (this.profileName) {
       this.profileName.textContent = profile.name;
@@ -31,12 +32,11 @@ export class ProfileView {
   }
 
   bindThemeToggle(handler) {
-    if (this.themeSwitch) {
-      this.themeSwitch.onclick = () => {
-        const isDark = !this.themeSwitch.classList.contains('on');
-        handler(isDark ? 'dark' : 'light');
-      };
-    }
+    if (!this.themeSwitch) return;
+    this.themeSwitch.addEventListener('click', () => {
+      const isDark = !this.themeSwitch.classList.contains('on');
+      handler(isDark ? 'dark' : 'light');
+    });
   }
 
   applyTheme(theme) {
@@ -49,9 +49,16 @@ export class ProfileView {
   }
 
   bindRestartOnboarding(handler) {
-    const btn = document.getElementById('btnRestartOnboarding');
-    if (btn) {
-      btn.onclick = () => handler();
+    if (this.restartOnboardingBtn) {
+      this.restartOnboardingBtn.addEventListener('click', () => handler());
     }
+  }
+
+  bindSoonButtons(handler) {
+    document.querySelectorAll('[data-soon]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        handler(btn.dataset.soon);
+      });
+    });
   }
 }

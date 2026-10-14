@@ -1,8 +1,10 @@
 /**
  * View: LogSheetView
- * Controla a Bottom Sheet completa de registro diário:
- * Fluxo, Cólicas/Dores, Muco Cervical, Temperatura Basal (TBC), Humor, Atividade Sexual e Estilo de Vida.
+ * Controla a Bottom Sheet de registro diário de sintomas, humor, muco e estilo de vida.
  */
+const SINGLE_SELECT_GROUPS = ['flow', 'mucus', 'stress', 'contraception'];
+const DEFAULT_TBC = 36.5;
+
 export class LogSheetView {
   constructor() {
     this.sheet = document.getElementById('sheet');
@@ -10,12 +12,11 @@ export class LogSheetView {
     this.openBtn = document.getElementById('openLog');
     this.saveBtn = document.getElementById('saveLog');
     this.closeBtn = document.getElementById('closeLogSheet');
-    this.toastEl = document.getElementById('toast');
-    this.micBtn = document.getElementById('micBtn');
+    this.sheetContent = this.sheet ? this.sheet.querySelector('.sheet-content') : null;
 
-    // Estado local da sheet
-    this.currentTbc = 36.5;
-    this.waterGlasses = 6;
+    this.currentTbc = DEFAULT_TBC;
+    this.hasModifiedTbc = false;
+    this.waterGlasses = 0;
 
     this._setupListeners();
     this._setupTbcControls();
@@ -25,34 +26,44 @@ export class LogSheetView {
 
   _setupListeners() {
     if (this.openBtn) {
-      this.openBtn.onclick = () => this.toggle(true);
+      this.openBtn.addEventListener('click', () => {
+        if (this._onOpen) this._onOpen();
+        this.toggle(true);
+      });
     }
+
     if (this.closeBtn) {
-      this.closeBtn.onclick = () => this.toggle(false);
+      this.closeBtn.addEventListener('click', () => this.toggle(false));
     }
+
     if (this.scrim) {
-      this.scrim.onclick = () => this.toggle(false);
+      this.scrim.addEventListener('click', () => this.toggle(false));
     }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.sheet?.classList.contains('show')) {
+        this.toggle(false);
+      }
+    });
 
     if (this.sheet) {
       this.sheet.addEventListener('click', (e) => {
         const opt = e.target.closest('.opt');
         if (!opt) return;
 
-        const groupName = opt.parentElement.dataset.group;
-        // Grupos de seleção única (fluxo, muco, estresse, pílula)
-        const singleSelectGroups = ['flow', 'mucus', 'stress', 'contraception'];
+        const groupContainer = opt.closest('[data-group]');
+        if (!groupContainer) return;
+        const groupName = groupContainer.dataset.group;
 
-        if (singleSelectGroups.includes(groupName)) {
+        if (SINGLE_SELECT_GROUPS.includes(groupName)) {
           const isAlreadyOn = opt.classList.contains('on');
-          opt.parentElement.querySelectorAll('.opt').forEach(sibling => {
+          groupContainer.querySelectorAll('.opt').forEach((sibling) => {
             sibling.classList.remove('on');
           });
           if (!isAlreadyOn) {
             opt.classList.add('on');
           }
         } else {
-          // Seleção múltipla (dores, humor, sexo, sono, hábitos)
           opt.classList.toggle('on');
         }
       });
@@ -61,19 +72,20 @@ export class LogSheetView {
 
   _setupCategoryChips() {
     const chipsContainer = document.getElementById('sheetCatChips');
-    if (!chipsContainer) return;
+    if (!chipsContainer || !this.sheetContent) return;
 
     chipsContainer.addEventListener('click', (e) => {
       const chip = e.target.closest('.sheet-chip');
       if (!chip) return;
 
-      chipsContainer.querySelectorAll('.sheet-chip').forEach(c => c.classList.remove('active'));
+      chipsContainer.querySelectorAll('.sheet-chip').forEach((c) => c.classList.remove('active'));
       chip.classList.add('active');
 
       const targetId = chip.dataset.target;
       const targetSection = document.getElementById(targetId);
       if (targetSection) {
-        targetSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const targetOffset = targetSection.offsetTop - this.sheetContent.offsetTop;
+        this.sheetContent.scrollTo({ top: Math.max(0, targetOffset - 10), behavior: 'smooth' });
       }
     });
   }
@@ -86,15 +98,16 @@ export class LogSheetView {
 
     const updateTbc = (newVal) => {
       this.currentTbc = Math.round(Math.max(35.5, Math.min(38.0, newVal)) * 10) / 10;
+      this.hasModifiedTbc = true;
       if (display) display.textContent = `${this.currentTbc.toFixed(1)} °C`;
       if (slider) slider.value = this.currentTbc;
     };
 
     if (minusBtn) {
-      minusBtn.onclick = () => updateTbc(this.currentTbc - 0.1);
+      minusBtn.addEventListener('click', () => updateTbc(this.currentTbc - 0.1));
     }
     if (plusBtn) {
-      plusBtn.onclick = () => updateTbc(this.currentTbc + 0.1);
+      plusBtn.addEventListener('click', () => updateTbc(this.currentTbc + 0.1));
     }
     if (slider) {
       slider.addEventListener('input', (e) => updateTbc(parseFloat(e.target.value)));
@@ -106,7 +119,7 @@ export class LogSheetView {
     const label = document.getElementById('displayWaterLabel');
     if (!container) return;
 
-    const renderGlasses = (count) => {
+    this._renderGlasses = (count) => {
       this.waterGlasses = count;
       const glasses = container.querySelectorAll('.water-glass');
       glasses.forEach((g, idx) => {
@@ -114,7 +127,7 @@ export class LogSheetView {
       });
       const ml = count * 250;
       if (label) {
-        label.textContent = `${count} copos (${(ml / 1000).toFixed(1)}L)`;
+        label.textContent = count === 0 ? 'Toque nos copos para marcar' : `${count} copos (${(ml / 1000).toFixed(1)}L)`;
       }
     };
 
@@ -122,48 +135,105 @@ export class LogSheetView {
       const glass = e.target.closest('.water-glass');
       if (!glass) return;
       const idx = parseInt(glass.dataset.idx, 10);
-      renderGlasses(idx);
+      const newCount = this.waterGlasses === idx ? idx - 1 : idx;
+      this._renderGlasses(Math.max(0, newCount));
     });
 
-    renderGlasses(this.waterGlasses);
+    this._renderGlasses(0);
+  }
+
+  bindOpen(handler) {
+    this._onOpen = handler;
   }
 
   bindSave(handler) {
-    if (this.saveBtn) {
-      this.saveBtn.onclick = () => {
-        // Coleta detalhada dos dados categorizados
-        const getSelectedInGroup = (groupName) => {
-          const container = this.sheet.querySelector(`[data-group="${groupName}"]`);
-          if (!container) return [];
-          return Array.from(container.querySelectorAll('.opt.on')).map(el => ({
-            value: el.dataset.val || el.textContent.trim(),
-            label: el.textContent.trim()
-          }));
-        };
-
-        const logData = {
-          flow: getSelectedInGroup('flow')[0] || null,
-          pain: getSelectedInGroup('pain'),
-          mucus: getSelectedInGroup('mucus')[0] || null,
-          bbt: this.currentTbc,
-          mood: getSelectedInGroup('mood'),
-          sex: getSelectedInGroup('sex'),
-          contraception: getSelectedInGroup('contraception')[0] || null,
-          sleep: getSelectedInGroup('sleep'),
-          stress: getSelectedInGroup('stress')[0] || null,
-          lifestyleHabits: getSelectedInGroup('lifestyle_habits'),
-          waterGlasses: this.waterGlasses
-        };
-
-        handler(logData);
-        this.toggle(false);
+    if (!this.saveBtn) return;
+    this.saveBtn.addEventListener('click', () => {
+      const getSelected = (groupName) => {
+        const container = this.sheet.querySelector(`[data-group="${groupName}"]`);
+        if (!container) return [];
+        return Array.from(container.querySelectorAll('.opt.on')).map((el) => {
+          // Extrai o texto limpo sem o span do emoji
+          const clone = el.cloneNode(true);
+          clone.querySelectorAll('span').forEach((s) => s.remove());
+          return {
+            value: el.dataset.val || clone.textContent.trim(),
+            label: clone.textContent.trim() || el.dataset.val
+          };
+        });
       };
+
+      const logData = {
+        flow: getSelected('flow')[0] || null,
+        pain: getSelected('pain'),
+        mucus: getSelected('mucus')[0] || null,
+        bbt: this.hasModifiedTbc ? this.currentTbc : null,
+        mood: getSelected('mood'),
+        sex: getSelected('sex'),
+        contraception: getSelected('contraception')[0] || null,
+        sleep: getSelected('sleep'),
+        stress: getSelected('stress')[0] || null,
+        lifestyleHabits: getSelected('lifestyle_habits'),
+        waterGlasses: this.waterGlasses
+      };
+
+      handler(logData);
+      this.toggle(false);
+    });
+  }
+
+  populate(logData) {
+    // Limpa seleções anteriores
+    if (this.sheet) {
+      this.sheet.querySelectorAll('.opt').forEach((opt) => opt.classList.remove('on'));
     }
 
-    if (this.micBtn) {
-      this.micBtn.onclick = () => {
-        this.showToast('Assistente de voz: em integração na Fase 3 🎙️✨');
-      };
+    if (!logData) {
+      this.hasModifiedTbc = false;
+      this.currentTbc = DEFAULT_TBC;
+      const display = document.getElementById('displayTbc');
+      const slider = document.getElementById('sliderTbc');
+      if (display) display.textContent = `${DEFAULT_TBC.toFixed(1)} °C`;
+      if (slider) slider.value = DEFAULT_TBC;
+      if (this._renderGlasses) this._renderGlasses(0);
+      return;
+    }
+
+    // Restaura seleções
+    const restoreGroup = (groupName, items) => {
+      if (!items) return;
+      const list = Array.isArray(items) ? items : [items];
+      const values = list.map((i) => (typeof i === 'object' ? i.value : i));
+      const groupEl = this.sheet.querySelector(`[data-group="${groupName}"]`);
+      if (!groupEl) return;
+      groupEl.querySelectorAll('.opt').forEach((opt) => {
+        if (values.includes(opt.dataset.val)) {
+          opt.classList.add('on');
+        }
+      });
+    };
+
+    restoreGroup('flow', logData.flow);
+    restoreGroup('pain', logData.pain);
+    restoreGroup('mucus', logData.mucus);
+    restoreGroup('mood', logData.mood);
+    restoreGroup('sex', logData.sex);
+    restoreGroup('contraception', logData.contraception);
+    restoreGroup('sleep', logData.sleep);
+    restoreGroup('stress', logData.stress);
+    restoreGroup('lifestyle_habits', logData.lifestyleHabits);
+
+    if (logData.bbt !== null && logData.bbt !== undefined) {
+      this.currentTbc = logData.bbt;
+      this.hasModifiedTbc = true;
+      const display = document.getElementById('displayTbc');
+      const slider = document.getElementById('sliderTbc');
+      if (display) display.textContent = `${this.currentTbc.toFixed(1)} °C`;
+      if (slider) slider.value = this.currentTbc;
+    }
+
+    if (this._renderGlasses) {
+      this._renderGlasses(logData.waterGlasses || 0);
     }
   }
 
@@ -172,15 +242,10 @@ export class LogSheetView {
     this.sheet.classList.toggle('show', isOpen);
     this.scrim.classList.toggle('show', isOpen);
     this.sheet.setAttribute('aria-hidden', String(!isOpen));
-  }
+    this.sheet.inert = !isOpen;
 
-  showToast(message) {
-    if (!this.toastEl) return;
-    this.toastEl.textContent = message;
-    this.toastEl.classList.add('show');
-    clearTimeout(this._toastTimeout);
-    this._toastTimeout = setTimeout(() => {
-      this.toastEl.classList.remove('show');
-    }, 2400);
+    if (isOpen && this.sheetContent) {
+      this.sheetContent.scrollTop = 0;
+    }
   }
 }

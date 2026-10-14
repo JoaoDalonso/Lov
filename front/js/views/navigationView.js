@@ -1,6 +1,7 @@
 /**
  * View: NavigationView
- * Gerencia a navegação entre telas, tanto via botões do bottom nav quanto via gestos de toque (touch swipe) na tela.
+ * Gerencia a navegação entre as telas do app Lov, tanto pelo Bottom Navigation
+ * quanto por gestos de swipe (arrasto lateral) otimizados para iOS Safari.
  */
 export class NavigationView {
   constructor() {
@@ -8,27 +9,43 @@ export class NavigationView {
     this.screensContainer = document.querySelector('.screens');
     this.screens = Array.from(document.querySelectorAll('.screen'));
     this.navButtons = Array.from(document.querySelectorAll('#nav button[data-tab]'));
-    this.chips = document.getElementById('chips');
 
     this.tabOrder = ['today', 'calendar', 'insights', 'learn', 'profile'];
     this.activeTabIndex = 0;
+    this._onTabChange = null;
 
-    this._setupChips();
+    this._setupTabClicks();
+    this._setupTabTargetLinks();
     this._setupTouchSwipe();
   }
 
-  _setupChips() {
-    if (this.chips) {
-      this.chips.addEventListener('click', (e) => {
-        const chip = e.target.closest('.chip');
-        if (!chip) return;
-        this.chips.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === chip));
-      });
-    }
+  _setupTabClicks() {
+    if (!this.nav) return;
+    this.nav.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-tab]');
+      if (!btn) return;
+      const tabName = btn.dataset.tab;
+      this.setActiveTab(tabName);
+      if (this._onTabChange) this._onTabChange(tabName);
+    });
+  }
+
+  _setupTabTargetLinks() {
+    // Permite que qualquer elemento com data-tab-target (como o avatar do topo) navegue para a aba
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-tab-target]');
+      if (!trigger) return;
+      const targetTab = trigger.dataset.tabTarget;
+      if (this.tabOrder.includes(targetTab)) {
+        this.setActiveTab(targetTab);
+        if (this._onTabChange) this._onTabChange(targetTab);
+      }
+    });
   }
 
   /**
-   * Navegação tátil por gestos de arrasto (Swipe) nativos para iPhone
+   * Navegação tátil por gestos de arrasto (Swipe)
+   * Ignora toques em componentes com scroll horizontal ou overlays ativos.
    */
   _setupTouchSwipe() {
     if (!this.screensContainer) return;
@@ -36,42 +53,59 @@ export class NavigationView {
     let startX = 0;
     let startY = 0;
     let isHorizontalSwipe = false;
+    let shouldIgnore = false;
 
-    this.screensContainer.addEventListener('touchstart', (e) => {
-      const touch = e.touches[0];
-      startX = touch.clientX;
-      startY = touch.clientY;
-      isHorizontalSwipe = false;
-    }, { passive: true });
+    this.screensContainer.addEventListener(
+      'touchstart',
+      (e) => {
+        const touch = e.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        isHorizontalSwipe = false;
 
-    this.screensContainer.addEventListener('touchmove', (e) => {
-      if (!e.touches.length) return;
-      const touch = e.touches[0];
-      const diffX = touch.clientX - startX;
-      const diffY = touch.clientY - startY;
+        // Ignora se o toque começou em carrosséis horizontais, sliders ou modais
+        const target = e.target;
+        shouldIgnore = Boolean(
+          target.closest('.cards-row, .chips, .sheet-cat-chips, input[type=range], .sheet, .onboarding-overlay, [data-no-swipe]')
+        );
+      },
+      { passive: true }
+    );
 
-      // Se o movimento for predominantemente horizontal e maior que 15px
-      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 15) {
-        isHorizontalSwipe = true;
-      }
-    }, { passive: true });
+    this.screensContainer.addEventListener(
+      'touchmove',
+      (e) => {
+        if (shouldIgnore || !e.touches.length) return;
+        const touch = e.touches[0];
+        const diffX = touch.clientX - startX;
+        const diffY = touch.clientY - startY;
 
-    this.screensContainer.addEventListener('touchend', (e) => {
-      if (!isHorizontalSwipe) return;
-      const touch = e.changedTouches[0];
-      const diffX = touch.clientX - startX;
-
-      // Limiar de swipe: pelo menos 50px de deslocamento
-      if (Math.abs(diffX) > 50) {
-        if (diffX < 0) {
-          // Swipe para esquerda -> Próxima aba
-          this.nextTab();
-        } else {
-          // Swipe para direita -> Aba anterior
-          this.prevTab();
+        // Se o movimento for predominantemente horizontal e relevante
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 18) {
+          isHorizontalSwipe = true;
         }
-      }
-    }, { passive: true });
+      },
+      { passive: true }
+    );
+
+    this.screensContainer.addEventListener(
+      'touchend',
+      (e) => {
+        if (shouldIgnore || !isHorizontalSwipe) return;
+        const touch = e.changedTouches[0];
+        const diffX = touch.clientX - startX;
+
+        // Limiar de swipe: pelo menos 55px
+        if (Math.abs(diffX) > 55) {
+          if (diffX < 0) {
+            this.nextTab();
+          } else {
+            this.prevTab();
+          }
+        }
+      },
+      { passive: true }
+    );
   }
 
   nextTab() {
@@ -92,17 +126,6 @@ export class NavigationView {
 
   bindTabChange(handler) {
     this._onTabChange = handler;
-
-    if (this.nav) {
-      this.nav.addEventListener('click', (e) => {
-        const btn = e.target.closest('button[data-tab]');
-        if (btn) {
-          const tabName = btn.dataset.tab;
-          this.setActiveTab(tabName);
-          handler(tabName);
-        }
-      });
-    }
   }
 
   setActiveTab(tabName) {
@@ -111,12 +134,18 @@ export class NavigationView {
       this.activeTabIndex = newIndex;
     }
 
-    this.screens.forEach(s => {
-      s.classList.toggle('active', s.id === `screen-${tabName}`);
+    this.screens.forEach((s) => {
+      const isActive = s.id === `screen-${tabName}`;
+      s.classList.toggle('active', isActive);
+      if (isActive) {
+        s.scrollTop = 0;
+      }
     });
 
-    this.navButtons.forEach(b => {
-      b.classList.toggle('active', b.dataset.tab === tabName);
+    this.navButtons.forEach((b) => {
+      const isActive = b.dataset.tab === tabName;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-selected', String(isActive));
     });
   }
 }

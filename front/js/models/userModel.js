@@ -1,28 +1,39 @@
 /**
  * Model: UserModel
- * Gerencia os dados do perfil do usuário e status de primeiro acesso/onboarding no padrão MVC.
+ * Perfil do usuário e estado de primeiro acesso.
  */
+import { readJson, writeJson } from '../utils/storage.js';
+
+const STORAGE_KEY = 'lov_user_profile';
+const DEFAULT_NAME = 'Ana Julia';
+
+const slugify = (text) =>
+  text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+
+const buildInitials = (name) =>
+  name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join('');
+
 export class UserModel {
   constructor() {
-    this.storageKey = 'lov_user_profile';
-    this.profile = this._loadProfile();
+    this.profile = readJson(STORAGE_KEY, null) || this._buildDefaultProfile();
   }
 
-  _loadProfile() {
-    const saved = localStorage.getItem(this.storageKey) || localStorage.getItem('lume_user_profile');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Erro ao ler perfil do localStorage:', e);
-      }
-    }
+  _buildDefaultProfile() {
     return {
-      name: 'Ana Julia',
-      handle: '@anajulia',
-      initials: 'AJ',
+      name: DEFAULT_NAME,
+      handle: `@${slugify(DEFAULT_NAME)}`,
+      initials: buildInitials(DEFAULT_NAME),
       email: '',
-      goal: 'track', // 'track' | 'pregnancy' | 'prevent' | 'body'
+      goal: 'track',
       remindersEnabled: true,
       isAuthenticated: false,
       isFirstAccess: true
@@ -34,49 +45,24 @@ export class UserModel {
   }
 
   isFirstAccess() {
-    return !!this.profile.isFirstAccess;
+    return Boolean(this.profile.isFirstAccess);
   }
 
   updateProfile(data) {
     this.profile = { ...this.profile, ...data };
-    this._save();
+    writeJson(STORAGE_KEY, this.profile);
     return this.getProfile();
   }
 
-  completeOnboarding({ name, email, goal, remindersEnabled, isAuthenticated = false }) {
-    const cleanName = (name && name.trim()) || 'Ana Julia';
-    const initials = cleanName
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(part => part[0].toUpperCase())
-      .join('') || 'AJ';
-
-    const handle = `@${cleanName.toLowerCase().replace(/\s+/g, '')}`;
-
-    this.profile = {
-      ...this.profile,
+  completeOnboarding({ name, goal, remindersEnabled }) {
+    const cleanName = name?.trim() || DEFAULT_NAME;
+    return this.updateProfile({
       name: cleanName,
-      handle,
-      initials,
-      email: email || '',
+      handle: `@${slugify(cleanName) || 'lov'}`,
+      initials: buildInitials(cleanName) || 'L',
       goal: goal || 'track',
-      remindersEnabled: remindersEnabled !== undefined ? remindersEnabled : true,
-      isAuthenticated,
+      remindersEnabled: remindersEnabled ?? true,
       isFirstAccess: false
-    };
-
-    this._save();
-    return this.getProfile();
-  }
-
-  resetOnboarding() {
-    this.profile.isFirstAccess = true;
-    this._save();
-    return this.getProfile();
-  }
-
-  _save() {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.profile));
+    });
   }
 }

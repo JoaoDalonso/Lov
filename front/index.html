@@ -80,11 +80,11 @@
         <form class="auth-form" onsubmit="return false;">
           <div class="input-field">
             <label for="inputAuthEmail">Seu e-mail</label>
-            <input type="email" id="inputAuthEmail" placeholder="exemplo@email.com" value="anajulia@exemplo.com" />
+            <input type="email" id="inputAuthEmail" placeholder="exemplo@email.com" autocomplete="email" />
           </div>
           <div class="input-field">
             <label for="inputAuthPassword">Sua senha</label>
-            <input type="password" id="inputAuthPassword" placeholder="••••••••" value="senha1234" />
+            <input type="password" id="inputAuthPassword" placeholder="••••••••" autocomplete="current-password" />
           </div>
           <button class="btn-pill" id="btnSubmitAuth">Criar minha conta 🌸</button>
         </form>
@@ -125,7 +125,7 @@
             <span class="choice-icon">🛡️</span>
             <div class="choice-info">
               <h3>Evitar gravidez naturalmente</h3>
-              <p>Conhecer minha janela fértil e sinais corporais.</p>
+              <p>Conhecer minha janela fértil. Estimativas não substituem um método contraceptivo.</p>
             </div>
             <span class="choice-radio"></span>
           </button>
@@ -282,7 +282,7 @@
           <div class="greet"><small id="todayDate">Hoje</small>
             <h1 id="userGreeting">Olá, Ana Julia 🌸</h1>
           </div>
-          <div class="avatar" id="topAvatar" aria-label="Perfil">AJ</div>
+          <button class="avatar" id="topAvatar" data-tab-target="profile" aria-label="Abrir perfil">AJ</button>
         </header>
 
         <div class="week" id="week" aria-label="Semana atual"></div>
@@ -291,7 +291,7 @@
           <div class="ring-wrap">
             <svg viewBox="0 0 260 260" id="ring" aria-hidden="true"></svg>
             <div class="ring-center">
-              <span class="label">Menstruação</span>
+              <span class="label" id="ringPhase">Menstruação</span>
               <span class="big" id="ringBig">5º dia</span>
               <span class="sub" id="ringSub">Próximo período em 23 dias</span>
             </div>
@@ -306,25 +306,9 @@
         </div>
 
         <div class="section-title">
-          <h2>Para você, hoje</h2><a href="#">Ver tudo</a>
+          <h2>Para você, hoje</h2>
         </div>
-        <div class="cards-row">
-          <article class="card rose">
-            <div class="ico">❤️</div>
-            <h3>Sintomas esperados</h3>
-            <p>Cólica leve, cansaço e sono mais pesado.</p>
-          </article>
-          <article class="card violet">
-            <div class="ico">🌙</div>
-            <h3>Dia 5 do ciclo</h3>
-            <p>Seus hormônios começam a subir aos poucos.</p>
-          </article>
-          <article class="card peach">
-            <div class="ico">🍵</div>
-            <h3>Autocuidado</h3>
-            <p>Chá morno e alongamento ajudam com a cólica.</p>
-          </article>
-        </div>
+        <div class="cards-row" id="phaseCards"></div>
       </section>
 
       <!-- CALENDÁRIO -->
@@ -353,10 +337,10 @@
           </div>
         </header>
         <div class="stat-grid">
-          <div class="stat"><small>Ciclo médio</small><strong>28<em>dias</em></strong></div>
-          <div class="stat"><small>Menstruação</small><strong>5<em>dias</em></strong></div>
-          <div class="stat"><small>Regularidade</small><strong>92<em>%</em></strong></div>
-          <div class="stat"><small>Ovulação</small><strong>14<em>º dia</em></strong></div>
+          <div class="stat"><small>Ciclo médio</small><strong><span id="statCycle">28</span><em>dias</em></strong></div>
+          <div class="stat"><small>Menstruação</small><strong><span id="statPeriod">5</span><em>dias</em></strong></div>
+          <div class="stat"><small>Regularidade</small><strong><span id="statRegularity">—</span><em id="statRegularityUnit">%</em></strong></div>
+          <div class="stat"><small>Ovulação</small><strong><span id="statOvulation">14</span><em>º dia</em></strong></div>
         </div>
         <div class="section-title">
           <h2>Sintomas mais frequentes</h2>
@@ -372,38 +356,56 @@
           </div>
         </header>
         <div class="chips" id="chips">
-          <button class="chip on">Tudo</button><button class="chip">Ciclo</button><button
-            class="chip">Fertilidade</button><button class="chip">Bem-estar</button><button
-            class="chip">Sexualidade</button>
+          <button class="chip on" data-filter="all">Tudo</button>
+          <button class="chip" data-filter="cycle">Ciclo</button>
+          <button class="chip" data-filter="fertility">Fertilidade</button>
+          <button class="chip" data-filter="wellbeing">Bem-estar</button>
+          <button class="chip" data-filter="sexuality">Sexualidade</button>
         </div>
-        <article class="article">
-          <div class="thumb" style="background:var(--rose-100)">🩸</div>
-          <div>
-            <h3>As 4 fases do ciclo explicadas</h3>
-            <p>Leitura de 4 min</p>
-          </div>
-        </article>
-        <article class="article">
-          <div class="thumb" style="background:var(--violet-100)">🥚</div>
-          <div>
-            <h3>Como identificar a ovulação</h3>
-            <p>Leitura de 5 min</p>
-          </div>
-        </article>
-        <article class="article">
-          <div class="thumb" style="background:var(--peach-100)">🧘‍♀️</div>
-          <div>
-            <h3>Alívio natural para cólicas</h3>
-            <p>Vídeo · 3 min</p>
-          </div>
-        </article>
-        <article class="article">
-          <div class="thumb" style="background:var(--rose-100)">😴</div>
-          <div>
-            <h3>Sono e hormônios: qual a relação?</h3>
-            <p>Leitura de 6 min</p>
-          </div>
-        </article>
+        <div id="articles">
+          <article class="article" data-category="cycle">
+            <div class="thumb" style="background:var(--rose-100)">🩸</div>
+            <div>
+              <h3>As 4 fases do ciclo explicadas</h3>
+              <p>Leitura de 4 min</p>
+            </div>
+          </article>
+          <article class="article" data-category="fertility">
+            <div class="thumb" style="background:var(--violet-100)">🥚</div>
+            <div>
+              <h3>Como identificar a ovulação</h3>
+              <p>Leitura de 5 min</p>
+            </div>
+          </article>
+          <article class="article" data-category="wellbeing">
+            <div class="thumb" style="background:var(--peach-100)">🧘‍♀️</div>
+            <div>
+              <h3>Alívio natural para cólicas</h3>
+              <p>Vídeo · 3 min</p>
+            </div>
+          </article>
+          <article class="article" data-category="wellbeing">
+            <div class="thumb" style="background:var(--rose-100)">😴</div>
+            <div>
+              <h3>Sono e hormônios: qual a relação?</h3>
+              <p>Leitura de 6 min</p>
+            </div>
+          </article>
+          <article class="article" data-category="sexuality">
+            <div class="thumb" style="background:var(--violet-100)">💗</div>
+            <div>
+              <h3>Libido ao longo do ciclo</h3>
+              <p>Leitura de 4 min</p>
+            </div>
+          </article>
+          <article class="article" data-category="cycle">
+            <div class="thumb" style="background:var(--peach-100)">🎈</div>
+            <div>
+              <h3>TPM: o que é normal sentir?</h3>
+              <p>Leitura de 5 min</p>
+            </div>
+          </article>
+        </div>
       </section>
 
       <!-- PERFIL -->
@@ -413,18 +415,14 @@
           <h1 id="profileName">Ana Julia</h1><small id="profileHandle">@anajulia</small>
         </div>
         <div class="list">
-          <button class="item"><span class="ico">👯‍♀️</span><span class="grow">Minhas amigas</span><span
-              class="chev">›</span></button>
-          <button class="item"><span class="ico">🔔</span><span class="grow">Lembretes</span><span
-              class="chev">›</span></button>
-          <button class="item"><span class="ico">🔒</span><span class="grow">PIN e privacidade</span><span
-              class="chev">›</span></button>
+          <button class="item" data-soon="Amizades chegam na Fase 4 👯‍♀️"><span class="ico">👯‍♀️</span><span class="grow">Minhas amigas</span><span class="chev">›</span></button>
+          <button class="item" data-soon="Lembretes chegam em breve 🔔"><span class="ico">🔔</span><span class="grow">Lembretes</span><span class="chev">›</span></button>
+          <button class="item" data-soon="PIN e privacidade chegam em breve 🔒"><span class="ico">🔒</span><span class="grow">PIN e privacidade</span><span class="chev">›</span></button>
         </div>
         <div class="list">
           <div class="item"><span class="ico">🌙</span><span class="grow">Modo escuro</span><button class="switch"
               id="themeSwitch" role="switch" aria-checked="false" aria-label="Modo escuro"></button></div>
-          <button class="item"><span class="ico">🌐</span><span class="grow">Idioma</span><span class="chev">Português
-              ›</span></button>
+          <button class="item" data-soon="Mais idiomas em breve 🌐"><span class="ico">🌐</span><span class="grow">Idioma</span><span class="chev">Português ›</span></button>
         </div>
         <div class="list">
           <button class="item" id="btnRestartOnboarding"><span class="ico">⚙️</span><span class="grow">Ajustar ciclo / Onboarding</span><span class="chev">›</span></button>

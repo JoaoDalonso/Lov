@@ -1,0 +1,37 @@
+/**
+ * Ponto de entrada (Main Entry Point)
+ * Inicialização da arquitetura MVC do Lume.
+ */
+import { CycleModel } from './models/cycleModel.js';
+import { UserModel } from './models/userModel.js';
+import { RingView } from './views/ringView.js';
+import { WeekView } from './views/weekView.js';
+import { CalendarView } from './views/calendarView.js';
+import { InsightsView } from './views/insightsView.js';
+import { LogSheetView } from './views/logSheetView.js';
+import { NavigationView } from './views/navigationView.js';
+import { ProfileView } from './views/profileView.js';
+import { AppController } from './controllers/appController.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. Models
+  const models = {
+    cycle: new CycleModel(),
+    user: new UserModel()
+  };
+
+  // 2. Views
+  const views = {
+    ring: new RingView(),
+    week: new WeekView(),
+    calendar: new CalendarView(),
+    insights: new InsightsView(),
+    logSheet: new LogSheetView(),
+    navigation: new NavigationView(),
+    profile: new ProfileView()
+  };
+
+  // 3. Controller
+  const controller = new AppController(models, views);
+  controller.init();
+});

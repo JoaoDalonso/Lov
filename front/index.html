@@ -8,7 +8,7 @@
   <meta name="description"
     content="Lov: acompanhe seu ciclo menstrual, previsões de período e ovulação, sintomas e insights, com uma assistente de IA acolhedora." />
   <title>Lov — Seu ciclo, seu ritmo</title>
-  <link rel="stylesheet" href="css/styles.css?v=2.2" />
+  <link rel="stylesheet" href="css/styles.css?v=2.3" />
 </head>
 
 <body>
@@ -450,14 +450,14 @@
           <h1 id="profileName">Ana Julia</h1><small id="profileHandle">@anajulia</small>
         </div>
         <div class="list">
-          <button class="item" data-soon="Amizades chegam na Fase 4 👯‍♀️"><span class="ico">👯‍♀️</span><span class="grow">Minhas amigas</span><span class="chev">›</span></button>
-          <button class="item" data-soon="Lembretes chegam em breve 🔔"><span class="ico">🔔</span><span class="grow">Lembretes</span><span class="chev">›</span></button>
-          <button class="item" data-soon="PIN e privacidade chegam em breve 🔒"><span class="ico">🔒</span><span class="grow">PIN e privacidade</span><span class="chev">›</span></button>
+          <button class="item" id="btnOpenFriends"><span class="ico">👯‍♀️</span><span class="grow">Minhas amigas</span><span class="chev">›</span></button>
+          <button class="item" id="btnOpenReminders"><span class="ico">🔔</span><span class="grow">Lembretes</span><span class="chev">›</span></button>
+          <button class="item" id="btnOpenPrivacy"><span class="ico">🔒</span><span class="grow">PIN e privacidade</span><span class="chev">›</span></button>
         </div>
         <div class="list">
           <div class="item"><span class="ico">🌙</span><span class="grow">Modo escuro</span><button class="switch"
               id="themeSwitch" role="switch" aria-checked="false" aria-label="Modo escuro"></button></div>
-          <button class="item" data-soon="Idioma selecionado: Português (Brasil) 🇧🇷"><span class="ico">🌐</span><span class="grow">Idioma</span><span class="chev">Português ›</span></button>
+          <button class="item" id="btnOpenLanguage"><span class="ico">🌐</span><span class="grow">Idioma</span><span class="chev">Português ›</span></button>
         </div>
 
         <div class="section-title">
@@ -767,6 +767,315 @@
 
         <div class="modal-actions">
           <button class="btn-pill" id="btnSaveConditions">Salvar preferências 💗</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE MINHAS AMIGAS -->
+    <div class="modal-overlay" id="friendsModal" aria-hidden="true" role="dialog">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h2>Minhas Amigas 👯‍♀️</h2>
+            <p class="modal-desc">Compartilhe apoio e acompanhe suas amigas de ciclo.</p>
+          </div>
+          <button class="modal-close-btn" id="closeFriendsModal" aria-label="Fechar">✕</button>
+        </div>
+
+        <div class="friends-list" id="friendsList">
+          <div class="friend-item">
+            <div class="avatar" style="width:42px;height:42px;font-size:14px;background:linear-gradient(135deg,var(--rose-400),var(--peach-400));">MC</div>
+            <div class="grow">
+              <div class="friend-name-row">
+                <strong>Mariana Costa</strong>
+                <span class="badge-phase period">🌸 Menstruação</span>
+              </div>
+              <small class="friend-sub">@mari_costa • 2º dia • <em>Cólica leve hoje ☕</em></small>
+            </div>
+            <button class="btn-icon-hug" data-friend-name="Mariana" title="Mandar carinho">💖</button>
+          </div>
+
+          <div class="friend-item">
+            <div class="avatar" style="width:42px;height:42px;font-size:14px;background:linear-gradient(135deg,var(--violet-400),var(--rose-400));">CS</div>
+            <div class="grow">
+              <div class="friend-name-row">
+                <strong>Camila Silveira</strong>
+                <span class="badge-phase follicular">🌱 Folicular</span>
+              </div>
+              <small class="friend-sub">@camilas • 8º dia • <em>Treino de força feito! 💪</em></small>
+            </div>
+            <button class="btn-icon-hug" data-friend-name="Camila" title="Mandar incentivo">✨</button>
+          </div>
+
+          <div class="friend-item">
+            <div class="avatar" style="width:42px;height:42px;font-size:14px;background:linear-gradient(135deg,var(--peach-400),var(--violet-400));">BL</div>
+            <div class="grow">
+              <div class="friend-name-row">
+                <strong>Beatriz Lima</strong>
+                <span class="badge-phase luteal">🌙 Lútea</span>
+              </div>
+              <small class="friend-sub">@bialima • 24º dia • <em>Desejo de chocolate 🍫</em></small>
+            </div>
+            <button class="btn-icon-hug" data-friend-name="Beatriz" title="Mandar abraço">🍰</button>
+          </div>
+        </div>
+
+        <div class="panel add-friend-box">
+          <label for="inputFriendHandle">Conectar nova amiga:</label>
+          <div class="input-row" style="display:flex;gap:8px;">
+            <input type="text" id="inputFriendHandle" placeholder="@usuario da amiga" style="flex:1;" />
+            <button class="btn-pill" id="btnAddFriendBtn" style="width:auto;padding:10px 18px;font-size:13px;">Adicionar</button>
+          </div>
+        </div>
+
+        <div class="privacy-toggle-box">
+          <div class="grow">
+            <strong>Compartilhar minha fase atual</strong>
+            <small style="display:block;color:var(--text-muted);font-size:12px;">Suas amigas veem apenas o nome da fase, nunca seus sintomas íntimos.</small>
+          </div>
+          <button class="switch on" id="switchShareCycleWithFriends" role="switch" aria-checked="true"></button>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-ghost" id="btnCopyInviteLink">🔗 Copiar meu link de convite</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE LEMBRETES -->
+    <div class="modal-overlay" id="remindersModal" aria-hidden="true" role="dialog">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h2>Lembretes & Notificações 🔔</h2>
+            <p class="modal-desc">Configure seus avisos discretos e no horário certo.</p>
+          </div>
+          <button class="modal-close-btn" id="closeRemindersModal" aria-label="Fechar">✕</button>
+        </div>
+
+        <div class="reminders-settings-list">
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="ico">🩸</span>
+              <div>
+                <strong>Previsão de menstruação</strong>
+                <small>Avisar 2 dias antes do início previsto</small>
+              </div>
+            </div>
+            <button class="switch on" id="switchReminderPeriod" role="switch" aria-checked="true"></button>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="ico">🥚</span>
+              <div>
+                <strong>Janela fértil & Ovulação</strong>
+                <small>Notificar quando seus dias férteis começarem</small>
+              </div>
+            </div>
+            <button class="switch on" id="switchReminderFertile" role="switch" aria-checked="true"></button>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="ico">💊</span>
+              <div>
+                <strong>Pílula ou medicação diária</strong>
+                <small>Horário habitual do seu lembrete diário</small>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="time" id="reminderPillTime" value="21:00" class="mini-time-input" />
+              <button class="switch on" id="switchReminderPill" role="switch" aria-checked="true"></button>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="ico">💧</span>
+              <div>
+                <strong>Lembrete de hidratação</strong>
+                <small>Alertas suaves de copos d'água durante o dia</small>
+              </div>
+            </div>
+            <button class="switch on" id="switchReminderWater" role="switch" aria-checked="true"></button>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="ico">🔒</span>
+              <div>
+                <strong>Notificações discretas (Modo Privacidade)</strong>
+                <small>Oculta palavras explícitas na tela de bloqueio</small>
+              </div>
+            </div>
+            <button class="switch on" id="switchReminderDiscrete" role="switch" aria-checked="true"></button>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-pill" id="btnSaveReminders">Salvar lembretes 💗</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE PIN E PRIVACIDADE -->
+    <div class="modal-overlay" id="privacyModal" aria-hidden="true" role="dialog">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h2>PIN & Privacidade 🔒</h2>
+            <p class="modal-desc">Seus dados de saúde protegidos sob a LGPD.</p>
+          </div>
+          <button class="modal-close-btn" id="closePrivacyModal" aria-label="Fechar">✕</button>
+        </div>
+
+        <div class="reminders-settings-list">
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="ico">🛡️</span>
+              <div>
+                <strong>Bloqueio por PIN / Biometria</strong>
+                <small>Exigir autenticação ao abrir o Lov</small>
+              </div>
+            </div>
+            <button class="switch" id="switchPinSecurity" role="switch" aria-checked="false"></button>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="ico">🕶️</span>
+              <div>
+                <strong>Modo Anônimo</strong>
+                <small>Sem rastreadores ou telemetria no dispositivo</small>
+              </div>
+            </div>
+            <button class="switch on" id="switchAnonymousMode" role="switch" aria-checked="true"></button>
+          </div>
+        </div>
+
+        <div class="panel privacy-actions-panel">
+          <div class="privacy-action-item" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div>
+              <strong>Exportar Meus Dados de Saúde</strong>
+              <small style="display:block;color:var(--text-muted);font-size:12px;">Baixe uma cópia completa dos seus ciclos e sintomas (LGPD art. 11).</small>
+            </div>
+            <button class="btn-ghost" id="btnExportHealthData" style="flex-shrink:0;">📥 Exportar</button>
+          </div>
+
+          <div class="privacy-action-item" style="display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:12px;margin-top:12px;">
+            <div>
+              <strong>Redefinir histórico do ciclo</strong>
+              <small style="display:block;color:var(--text-muted);font-size:12px;">Limpa os ciclos salvos no navegador para reiniciar.</small>
+            </div>
+            <button class="btn-ghost btn-danger" id="btnResetCycleData" style="flex-shrink:0;">🗑️ Redefinir</button>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-pill" id="btnClosePrivacySettings">Concluir</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE CONTRACEPTIVO HABITUAL -->
+    <div class="modal-overlay" id="contraceptiveModal" aria-hidden="true" role="dialog">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h2>Método Contraceptivo 💊</h2>
+            <p class="modal-desc">Selecione o método fixo que você utiliza atualmente.</p>
+          </div>
+          <button class="modal-close-btn" id="closeContraceptiveModal" aria-label="Fechar">✕</button>
+        </div>
+
+        <div class="contraceptive-modal-pills" id="contraceptiveModalPills" style="display:flex;flex-direction:column;gap:10px;">
+          <button type="button" class="contraceptive-choice active" data-value="pill">
+            <span class="choice-ico">💊</span>
+            <div class="choice-details">
+              <strong>Pílula anticoncepcional diária</strong>
+              <small>Cartela de 21, 24 ou 28 comprimidos</small>
+            </div>
+          </button>
+
+          <button type="button" class="contraceptive-choice" data-value="iud">
+            <span class="choice-ico">🩺</span>
+            <div class="choice-details">
+              <strong>DIU / Implante hormonal</strong>
+              <small>Mirena, Kyleena, Cobre ou Implanon</small>
+            </div>
+          </button>
+
+          <button type="button" class="contraceptive-choice" data-value="condom">
+            <span class="choice-ico">🛡️</span>
+            <div class="choice-details">
+              <strong>Preservativo (Camisinha)</strong>
+              <small>Método de barreira com ou sem espermicida</small>
+            </div>
+          </button>
+
+          <button type="button" class="contraceptive-choice" data-value="injection">
+            <span class="choice-ico">💉</span>
+            <div class="choice-details">
+              <strong>Injeção hormonal</strong>
+              <small>Mensal ou trimestral</small>
+            </div>
+          </button>
+
+          <button type="button" class="contraceptive-choice" data-value="ring_patch">
+            <span class="choice-ico">⭕</span>
+            <div class="choice-details">
+              <strong>Anel vaginal ou Adesivo</strong>
+              <small>Uso cíclico semanal ou mensal</small>
+            </div>
+          </button>
+
+          <button type="button" class="contraceptive-choice" data-value="none">
+            <span class="choice-ico">🌿</span>
+            <div class="choice-details">
+              <strong>Nenhum método</strong>
+              <small>Sem contracepção hormonal ou de barreira</small>
+            </div>
+          </button>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-pill" id="btnSaveContraceptiveModal">Salvar método 🌸</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE IDIOMA -->
+    <div class="modal-overlay" id="languageModal" aria-hidden="true" role="dialog">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h2>Idioma / Language 🌐</h2>
+            <p class="modal-desc">Selecione o idioma de sua preferência.</p>
+          </div>
+          <button class="modal-close-btn" id="closeLanguageModal" aria-label="Fechar">✕</button>
+        </div>
+
+        <div class="language-list">
+          <button class="item active" data-lang="pt-BR" style="background:var(--surface-2);border-radius:var(--radius-sm);margin-bottom:8px;">
+            <span class="ico">🇧🇷</span>
+            <span class="grow"><strong>Português (Brasil)</strong></span>
+            <span class="chev">✓</span>
+          </button>
+          <button class="item" data-lang="en-US" style="border-radius:var(--radius-sm);margin-bottom:8px;">
+            <span class="ico">🇺🇸</span>
+            <span class="grow"><strong>English (US)</strong></span>
+            <span class="chev">›</span>
+          </button>
+          <button class="item" data-lang="es-ES" style="border-radius:var(--radius-sm);">
+            <span class="ico">🇪🇸</span>
+            <span class="grow"><strong>Español</strong></span>
+            <span class="chev">›</span>
+          </button>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-pill" id="btnConfirmLanguage">Confirmar</button>
         </div>
       </div>
     </div>

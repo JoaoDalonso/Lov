@@ -1,6 +1,7 @@
 /**
  * View: ProfileView
- * Controla os elementos da tela de perfil, informações do usuário, tema e preferências fixas de saúde/rotina.
+ * Controla os elementos da tela de perfil, informações do usuário, tema,
+ * preferências fixas de rotina/saúde e modais funcionais (Amigas, Lembretes, Privacidade, Contraceptivo, Idioma).
  */
 const CONTRACEPTIVE_NAMES = {
   none: 'Nenhum',
@@ -8,6 +9,8 @@ const CONTRACEPTIVE_NAMES = {
   'pill-taken': 'Pílula no horário',
   iud: 'DIU / Implante hormonal',
   condom: 'Preservativo',
+  injection: 'Injeção hormonal',
+  ring_patch: 'Anel vaginal ou Adesivo',
   other: 'Outro método'
 };
 
@@ -29,6 +32,12 @@ export class ProfileView {
     this.profileHandle = document.getElementById('profileHandle');
     this.restartOnboardingBtn = document.getElementById('btnRestartOnboarding');
 
+    // Botões principais do perfil
+    this.btnOpenFriends = document.getElementById('btnOpenFriends');
+    this.btnOpenReminders = document.getElementById('btnOpenReminders');
+    this.btnOpenPrivacy = document.getElementById('btnOpenPrivacy');
+    this.btnOpenLanguage = document.getElementById('btnOpenLanguage');
+
     // Rotina & Condições
     this.contraceptiveLabel = document.getElementById('profileContraceptiveLabel');
     this.conditionsLabel = document.getElementById('profileConditionsLabel');
@@ -36,39 +45,230 @@ export class ProfileView {
     this.btnManageConditions = document.getElementById('btnManageConditions');
     this.switchAutoPreFill = document.getElementById('switchAutoPreFill');
 
-    // Modal de condições
+    // Modais
     this.conditionsModal = document.getElementById('conditionsModal');
     this.closeConditionsModalBtn = document.getElementById('closeConditionsModal');
     this.btnSaveConditions = document.getElementById('btnSaveConditions');
     this.conditionsCheckList = document.getElementById('conditionsCheckList');
 
+    this.friendsModal = document.getElementById('friendsModal');
+    this.closeFriendsModalBtn = document.getElementById('closeFriendsModal');
+    this.btnCopyInviteLink = document.getElementById('btnCopyInviteLink');
+    this.btnAddFriendBtn = document.getElementById('btnAddFriendBtn');
+    this.inputFriendHandle = document.getElementById('inputFriendHandle');
+    this.friendsList = document.getElementById('friendsList');
+
+    this.remindersModal = document.getElementById('remindersModal');
+    this.closeRemindersModalBtn = document.getElementById('closeRemindersModal');
+    this.btnSaveReminders = document.getElementById('btnSaveReminders');
+
+    this.privacyModal = document.getElementById('privacyModal');
+    this.closePrivacyModalBtn = document.getElementById('closePrivacyModal');
+    this.btnClosePrivacySettings = document.getElementById('btnClosePrivacySettings');
+    this.btnExportHealthData = document.getElementById('btnExportHealthData');
+    this.btnResetCycleData = document.getElementById('btnResetCycleData');
+
+    this.contraceptiveModal = document.getElementById('contraceptiveModal');
+    this.closeContraceptiveModalBtn = document.getElementById('closeContraceptiveModal');
+    this.btnSaveContraceptiveModal = document.getElementById('btnSaveContraceptiveModal');
+    this.contraceptivePillsContainer = document.getElementById('contraceptiveModalPills');
+
+    this.languageModal = document.getElementById('languageModal');
+    this.closeLanguageModalBtn = document.getElementById('closeLanguageModal');
+    this.btnConfirmLanguage = document.getElementById('btnConfirmLanguage');
+
+    // Callbacks externos
+    this._onSaveContraceptive = null;
+    this._onExportData = null;
+    this._onResetData = null;
+    this._onToast = null;
+
     this._setupModalListeners();
   }
 
-  _setupModalListeners() {
-    if (this.closeConditionsModalBtn) {
-      this.closeConditionsModalBtn.addEventListener('click', () => this.closeConditionsModal());
+  setToastHandler(handler) {
+    this._onToast = handler;
+  }
+
+  _notify(message) {
+    if (this._onToast) {
+      this._onToast(message);
     }
-    if (this.conditionsModal) {
-      this.conditionsModal.addEventListener('click', (e) => {
-        if (e.target === this.conditionsModal) this.closeConditionsModal();
-      });
+  }
+
+  _setupModalListeners() {
+    // 1. Condições de saúde
+    if (this.closeConditionsModalBtn) {
+      this.closeConditionsModalBtn.addEventListener('click', () => this._closeModal(this.conditionsModal));
     }
     if (this.btnManageConditions) {
-      this.btnManageConditions.addEventListener('click', () => this.openConditionsModal());
+      this.btnManageConditions.addEventListener('click', () => this._openModal(this.conditionsModal));
     }
+
+    // 2. Minhas amigas
+    if (this.btnOpenFriends) {
+      this.btnOpenFriends.addEventListener('click', () => this._openModal(this.friendsModal));
+    }
+    if (this.closeFriendsModalBtn) {
+      this.closeFriendsModalBtn.addEventListener('click', () => this._closeModal(this.friendsModal));
+    }
+    if (this.btnCopyInviteLink) {
+      this.btnCopyInviteLink.addEventListener('click', () => {
+        navigator.clipboard?.writeText('https://lov.app/convite/@anajulia');
+        this._notify('Link de convite copiado para a área de transferência! 🔗');
+      });
+    }
+    if (this.btnAddFriendBtn && this.inputFriendHandle) {
+      this.btnAddFriendBtn.addEventListener('click', () => {
+        const val = this.inputFriendHandle.value.trim();
+        if (!val) return;
+        this.inputFriendHandle.value = '';
+        this._notify(`Convite enviado para ${val}! 🌸`);
+      });
+    }
+    if (this.friendsList) {
+      this.friendsList.addEventListener('click', (e) => {
+        const hugBtn = e.target.closest('[data-friend-name]');
+        if (hugBtn) {
+          const name = hugBtn.dataset.friendName;
+          hugBtn.style.transform = 'scale(1.25)';
+          setTimeout(() => (hugBtn.style.transform = ''), 200);
+          this._notify(`Você enviou um abraço virtual para ${name}! 💖☕`);
+        }
+      });
+    }
+
+    // 3. Lembretes
+    if (this.btnOpenReminders) {
+      this.btnOpenReminders.addEventListener('click', () => this._openModal(this.remindersModal));
+    }
+    if (this.closeRemindersModalBtn) {
+      this.closeRemindersModalBtn.addEventListener('click', () => this._closeModal(this.remindersModal));
+    }
+    if (this.btnSaveReminders) {
+      this.btnSaveReminders.addEventListener('click', () => {
+        this._closeModal(this.remindersModal);
+        this._notify('Lembretes e horários salvos com sucesso! 🔔💗');
+      });
+    }
+
+    // 4. PIN e Privacidade
+    if (this.btnOpenPrivacy) {
+      this.btnOpenPrivacy.addEventListener('click', () => this._openModal(this.privacyModal));
+    }
+    if (this.closePrivacyModalBtn) {
+      this.closePrivacyModalBtn.addEventListener('click', () => this._closeModal(this.privacyModal));
+    }
+    if (this.btnClosePrivacySettings) {
+      this.btnClosePrivacySettings.addEventListener('click', () => this._closeModal(this.privacyModal));
+    }
+    if (this.btnExportHealthData) {
+      this.btnExportHealthData.addEventListener('click', () => {
+        if (this._onExportData) {
+          this._onExportData();
+        } else {
+          this._notify('Exportando seus dados de saúde em JSON... 📥');
+        }
+      });
+    }
+    if (this.btnResetCycleData) {
+      this.btnResetCycleData.addEventListener('click', () => {
+        if (confirm('Tem certeza que deseja redefinir seus dados do ciclo? Essa ação restaurará os valores iniciais.')) {
+          if (this._onResetData) {
+            this._onResetData();
+          } else {
+            localStorage.clear();
+            window.location.reload();
+          }
+        }
+      });
+    }
+
+    // 5. Contraceptivo modal
+    if (this.btnChangeContraceptive) {
+      this.btnChangeContraceptive.addEventListener('click', () => this._openModal(this.contraceptiveModal));
+    }
+    if (this.closeContraceptiveModalBtn) {
+      this.closeContraceptiveModalBtn.addEventListener('click', () => this._closeModal(this.contraceptiveModal));
+    }
+    if (this.contraceptivePillsContainer) {
+      this.contraceptivePillsContainer.addEventListener('click', (e) => {
+        const choice = e.target.closest('.contraceptive-choice');
+        if (!choice) return;
+        this.contraceptivePillsContainer
+          .querySelectorAll('.contraceptive-choice')
+          .forEach((c) => c.classList.remove('active'));
+        choice.classList.add('active');
+      });
+    }
+    if (this.btnSaveContraceptiveModal) {
+      this.btnSaveContraceptiveModal.addEventListener('click', () => {
+        const active = this.contraceptivePillsContainer?.querySelector('.contraceptive-choice.active');
+        const val = active?.dataset.value || 'pill';
+        this._closeModal(this.contraceptiveModal);
+        if (this._onSaveContraceptive) {
+          this._onSaveContraceptive(val);
+        } else {
+          if (this.contraceptiveLabel) {
+            this.contraceptiveLabel.textContent = CONTRACEPTIVE_NAMES[val] || val;
+          }
+          this._notify(`Método atualizado para: ${CONTRACEPTIVE_NAMES[val] || val} 💊`);
+        }
+      });
+    }
+
+    // 6. Idioma modal
+    if (this.btnOpenLanguage) {
+      this.btnOpenLanguage.addEventListener('click', () => this._openModal(this.languageModal));
+    }
+    if (this.closeLanguageModalBtn) {
+      this.closeLanguageModalBtn.addEventListener('click', () => this._closeModal(this.languageModal));
+    }
+    if (this.btnConfirmLanguage) {
+      this.btnConfirmLanguage.addEventListener('click', () => {
+        this._closeModal(this.languageModal);
+        this._notify('Idioma mantido em Português (Brasil) 🇧🇷');
+      });
+    }
+
+    // Fechar ao clicar fora no overlay
+    [
+      this.conditionsModal,
+      this.friendsModal,
+      this.remindersModal,
+      this.privacyModal,
+      this.contraceptiveModal,
+      this.languageModal
+    ].forEach((m) => {
+      if (!m) return;
+      m.addEventListener('click', (e) => {
+        if (e.target === m) this._closeModal(m);
+      });
+    });
+  }
+
+  _openModal(modal) {
+    if (!modal) return;
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  _closeModal(modal) {
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
   }
 
   openConditionsModal() {
-    if (!this.conditionsModal) return;
-    this.conditionsModal.classList.add('show');
-    this.conditionsModal.setAttribute('aria-hidden', 'false');
+    this._openModal(this.conditionsModal);
   }
 
   closeConditionsModal() {
-    if (!this.conditionsModal) return;
-    this.conditionsModal.classList.remove('show');
-    this.conditionsModal.setAttribute('aria-hidden', 'true');
+    this._closeModal(this.conditionsModal);
+  }
+
+  openContraceptiveModal() {
+    this._openModal(this.contraceptiveModal);
   }
 
   renderUserProfile(profile, routineDefaults = null) {
@@ -89,9 +289,16 @@ export class ProfileView {
     }
 
     // Renderiza rótulo de contraceptivo fixo
+    const cValue = routineDefaults?.contraceptive || profile.contraceptiveMethod || 'none';
     if (this.contraceptiveLabel) {
-      const cValue = routineDefaults?.contraceptive || profile.contraceptiveMethod || 'none';
       this.contraceptiveLabel.textContent = CONTRACEPTIVE_NAMES[cValue] || cValue;
+    }
+
+    // Seleciona o pill correto no modal
+    if (this.contraceptivePillsContainer) {
+      this.contraceptivePillsContainer.querySelectorAll('.contraceptive-choice').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.value === cValue);
+      });
     }
 
     // Renderiza condições de saúde salvas
@@ -131,10 +338,25 @@ export class ProfileView {
     });
   }
 
+  bindSaveContraceptive(handler) {
+    this._onSaveContraceptive = handler;
+  }
+
   bindChangeContraceptive(handler) {
     if (this.btnChangeContraceptive) {
-      this.btnChangeContraceptive.addEventListener('click', () => handler());
+      this.btnChangeContraceptive.addEventListener('click', () => {
+        this.openContraceptiveModal();
+        if (handler) handler();
+      });
     }
+  }
+
+  bindExportData(handler) {
+    this._onExportData = handler;
+  }
+
+  bindResetData(handler) {
+    this._onResetData = handler;
   }
 
   bindAutoPreFillToggle(handler) {

@@ -5,7 +5,7 @@
  */
 import { addDays, daysBetween, startOfDay, toLocalISODate, parseLocalDate, isSameDay } from '../utils/dateUtils.js';
 import { readJson, writeJson, readText, writeText } from '../utils/storage.js';
-import { PHASE_CONTENT } from './phaseContent.js';
+import { PHASE_CONTENT, CONDITION_TIPS } from './phaseContent.js';
 
 const STORAGE_KEYS = {
   cycle: 'lov_cycle_v2',
@@ -523,12 +523,50 @@ export class CycleModel {
   }
 
   getPhaseCards(info = this.getCycleInfo()) {
-    const content = PHASE_CONTENT[info.phase] || PHASE_CONTENT.menstrual;
-    return content.map((card, index) =>
-      index === 1 && info.phase === PHASE.MENSTRUAL
-        ? { ...card, title: `Dia ${info.todayCycleDay} do ciclo` }
+    const baseCards = [...(PHASE_CONTENT[info.phase] || PHASE_CONTENT.menstrual)];
+
+    // 1. Destaque do dia exato no primeiro card menstrual
+    const enrichedCards = baseCards.map((card, index) =>
+      index === 0 && info.phase === PHASE.MENSTRUAL
+        ? { ...card, title: `${info.todayCycleDay}º dia da menstruação` }
         : card
     );
+
+    // 2. Card interativo de rotina / Pílula se o método estiver configurado
+    const defaults = this.getDailyDefaults();
+    const todayLog = this.getDailyLog(new Date()) || {};
+    if (defaults && defaults.contraceptive && defaults.contraceptive !== 'none') {
+      const isPill = String(defaults.contraceptive).includes('pill');
+      const alreadyTaken = Boolean(
+        todayLog.contraceptive?.taken ||
+        todayLog.pillTaken ||
+        (Array.isArray(todayLog.medications) && todayLog.medications.some((m) => m.id === 'pill'))
+      );
+
+      enrichedCards.splice(1, 0, {
+        tone: 'violet',
+        tag: 'Rotina Fixa',
+        icon: isPill ? '💊' : '🩺',
+        title: isPill ? 'Lembrete da Pílula Diária' : 'Método Contraceptivo',
+        text: alreadyTaken
+          ? 'Você já registrou a tomada de hoje! Excelente adesão para sua proteção e saúde.'
+          : (isPill ? 'Horário habitual das 21:00. Tomou sua dose de hoje?' : 'Método habitual ativo e monitorado nas previsões.'),
+        action: alreadyTaken
+          ? null
+          : { type: 'take-pill', label: 'Marcar pílula como tomada ✨' }
+      });
+    }
+
+    // 3. Cards personalizados para as condições de saúde cadastradas pela usuária (SOP, Endometriose, etc.)
+    if (defaults && Array.isArray(defaults.conditions)) {
+      defaults.conditions.forEach((condKey) => {
+        if (CONDITION_TIPS[condKey]) {
+          enrichedCards.push(CONDITION_TIPS[condKey]);
+        }
+      });
+    }
+
+    return enrichedCards;
   }
 
   /* --------------------------------- insights -------------------------------- */

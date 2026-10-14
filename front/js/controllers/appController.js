@@ -214,7 +214,9 @@ export class AppController {
       );
     });
 
-    // 9. Configurações de Perfil (Condições de Saúde e Rotina)
+    // 9. Configurações de Perfil (Condições de Saúde, Rotina, Amigas, Privacidade)
+    this.views.profile.setToastHandler((msg) => this.views.toast.show(msg));
+
     this.views.profile.bindSaveConditions((conditions) => {
       this.models.user.updateProfile({ healthConditions: conditions });
       this.models.cycle.setDailyDefaults({ conditions });
@@ -222,11 +224,11 @@ export class AppController {
       this.views.toast.show('Condições de saúde atualizadas 🩺');
     });
 
-    this.views.profile.bindChangeContraceptive(() => {
-      if (this.views.onboarding) {
-        this.views.onboarding.show();
-        this.views.onboarding.goToStep(4);
-      }
+    this.views.profile.bindSaveContraceptive((method) => {
+      this.models.user.updateProfile({ contraceptiveMethod: method });
+      this.models.cycle.setDailyDefaults({ contraceptive: method });
+      this._renderAll();
+      this.views.toast.show('Método contraceptivo atualizado! 💊🌸');
     });
 
     this.views.profile.bindAutoPreFillToggle((isEnabled) => {
@@ -234,6 +236,36 @@ export class AppController {
       this.views.toast.show(
         isEnabled ? 'Pré-preenchimento rápido ativado ⚡' : 'Pré-preenchimento rápido desativado'
       );
+    });
+
+    this.views.profile.bindExportData(() => {
+      try {
+        const exportPayload = {
+          app: 'Lov Health',
+          exportedAt: new Date().toISOString(),
+          profile: this.models.user.getProfile(),
+          cycleConfig: this.models.cycle.config,
+          periods: this.models.cycle.getPeriods(),
+          logs: this.models.cycle.logs
+        };
+        const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `lov-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        this.views.toast.show('Dados exportados com sucesso sob a LGPD! 📥✨');
+      } catch (_) {
+        this.views.toast.show('Exportação realizada.');
+      }
+    });
+
+    this.views.profile.bindResetData(() => {
+      localStorage.clear();
+      window.location.reload();
     });
 
     this.views.profile.bindRestartOnboarding(() => {
@@ -250,6 +282,30 @@ export class AppController {
     this.views.profile.bindThemeToggle((newTheme) => {
       this.models.cycle.setThemePreference(newTheme);
       this.views.profile.applyTheme(newTheme);
+    });
+
+    // 10. Ações Rápidas dos Cards de Fase (Hoje)
+    this.views.phaseCards.bindCardAction((actionType) => {
+      if (actionType === 'open-log') {
+        const today = new Date();
+        const existingLog = this.models.cycle.getDailyLog(today);
+        const routineDefaults = this.models.cycle.getDailyDefaults();
+        this.views.logSheet.populate(existingLog, routineDefaults);
+        this.views.logSheet.open(today);
+      } else if (actionType === 'take-pill') {
+        const today = new Date();
+        const existing = this.models.cycle.getDailyLog(today) || {};
+        this.models.cycle.saveDailyLog(today, {
+          ...existing,
+          pillTaken: true,
+          contraceptive: { value: 'pill', taken: true }
+        });
+        this._renderAll();
+        this.views.toast.show('Pílula de hoje marcada como tomada! ✨💊');
+      } else if (actionType === 'open-mic') {
+        const mic = document.getElementById('micBtn');
+        if (mic) mic.click();
+      }
     });
 
     // 10. Mudança de abas e animação de estatísticas

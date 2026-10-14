@@ -491,7 +491,7 @@ h1, h2, h3 {
 }
 
 .card {
-  flex: 0 0 250px;
+  flex: 0 0 270px;
   scroll-snap-align: start;
   background: var(--surface);
   border-radius: var(--radius-md);
@@ -499,14 +499,41 @@ h1, h2, h3 {
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   border: 1px solid var(--line);
-  transition: transform 0.2s var(--ease);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  position: relative;
+}
+
+.card:hover {
+  box-shadow: var(--shadow);
 }
 
 .card:active {
   transform: scale(0.98);
 }
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.card-badge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+
+.card.rose .card-badge { background: var(--rose-100); color: var(--rose-500); }
+.card.violet .card-badge { background: var(--violet-100); color: var(--violet-500); }
+.card.peach .card-badge { background: var(--peach-100); color: var(--peach-400); }
 
 .card .ico {
   width: 40px;
@@ -533,8 +560,38 @@ h1, h2, h3 {
 .card p {
   font-size: 13px;
   color: var(--text-muted);
-  line-height: 1.4;
+  line-height: 1.45;
   font-weight: 600;
+}
+
+.card-action-btn {
+  margin-top: 4px;
+  padding: 9px 16px;
+  border-radius: 99px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid var(--line);
+  transition: all 0.2s var(--ease);
+  width: fit-content;
+  cursor: pointer;
+}
+
+.card.rose .card-action-btn {
+  background: var(--rose-100);
+  color: var(--rose-500);
+  border-color: transparent;
+}
+
+.card.violet .card-action-btn {
+  background: var(--violet-100);
+  color: var(--violet-500);
+  border-color: transparent;
+}
+
+.card-action-btn:active {
+  transform: scale(0.95);
 }
 
 /* ---------- Painéis Universais ---------- */
@@ -2354,8 +2411,232 @@ h1, h2, h3 {
   margin-top: 8px;
 }
 
-#profileRoutineSection small {
+/* ---------- Estilos de Minhas Amigas & Rede de Apoio ---------- */
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.friend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  transition: transform 0.15s var(--ease);
+}
+
+.friend-item:active {
+  transform: scale(0.99);
+}
+
+.friend-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.friend-name-row strong {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.badge-phase {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text-muted);
+}
+
+.badge-phase.period {
+  background: var(--rose-100);
+  color: var(--rose-500);
+}
+
+.badge-phase.follicular {
+  background: var(--peach-100);
+  color: var(--peach-400);
+}
+
+.badge-phase.luteal {
+  background: var(--violet-100);
+  color: var(--violet-500);
+}
+
+.friend-sub {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
   margin-top: 2px;
+}
+
+.btn-icon-hug {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s var(--ease);
+  flex-shrink: 0;
+}
+
+.btn-icon-hug:active {
+  transform: scale(0.9);
+}
+
+.add-friend-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface-2);
+}
+
+.add-friend-box label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.privacy-toggle-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  border: 1px solid var(--line);
+}
+
+/* ---------- Lembretes & Notificações ---------- */
+.reminders-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.setting-row:last-child {
+  border-bottom: 0;
+}
+
+.setting-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.setting-info .ico {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.setting-info strong {
+  font-size: 14px;
+  color: var(--text);
+  display: block;
+}
+
+.setting-info small {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+
+.mini-time-input {
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 13px;
+  outline: none;
+}
+
+/* ---------- Modal de Contraceptivos ---------- */
+.contraceptive-modal-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contraceptive-choice {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+
+.contraceptive-choice:hover {
+  border-color: var(--line);
+}
+
+.contraceptive-choice.active {
+  border-color: var(--rose-500);
+  background: var(--rose-100);
+}
+
+.choice-ico {
+  font-size: 22px;
+  width: 36px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.choice-details strong {
+  font-size: 14px;
+  color: var(--text);
+  display: block;
+}
+
+.choice-details small {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+
+.privacy-actions-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2364,4 +2645,5 @@ h1, h2, h3 {
     transition-duration: 0.01ms !important;
   }
 }
+
 

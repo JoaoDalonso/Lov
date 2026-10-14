@@ -53,6 +53,34 @@ export class CycleModel {
     this.logs = readJson(STORAGE_KEYS.logs, {});
     this.periods = readJson(STORAGE_KEYS.periods, null) || this._buildDefaultPeriods();
     this.defaults = readJson(STORAGE_KEYS.defaults, this._buildDefaultRoutine());
+
+    this._sanitizeData();
+  }
+
+  _sanitizeData() {
+    // Corrige qualquer data legada/corrompida no localStorage (ex: 1906)
+    const currentYear = new Date().getFullYear();
+
+    if (this.config) {
+      const parsedStart = parseLocalDate(this.config.lastPeriodStartDate);
+      if (!parsedStart || parsedStart.getFullYear() < 2000) {
+        this.config.lastPeriodStartDate = toLocalISODate(addDays(new Date(), -1));
+        this._persistConfig();
+      }
+    }
+
+    if (Array.isArray(this.periods)) {
+      let changed = false;
+      this.periods = this.periods.filter((p) => {
+        const start = parseLocalDate(p.startDate);
+        return start && start.getFullYear() >= 2000;
+      });
+      if (!this.periods.length) {
+        this.periods = this._buildDefaultPeriods();
+        changed = true;
+      }
+      if (changed) this._persistPeriods();
+    }
   }
 
   /* ------------------------------ configuração ------------------------------ */

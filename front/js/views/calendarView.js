@@ -161,9 +161,12 @@ export class CalendarView {
   }
 
   render(monthDate, { leadingBlanks, days }, dayDetail = null, periodsHistory = []) {
-    // 1. Título do mês
+    // 1. Título do mês (fuso local de Brasília e ano atualizado)
     if (this.title) {
-      this.title.textContent = monthDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      const year = monthDate.getFullYear() < 2000 ? new Date().getFullYear() : monthDate.getFullYear();
+      const safeMonthDate = new Date(year, monthDate.getMonth(), 1);
+      const rawMonth = safeMonthDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      this.title.textContent = rawMonth.charAt(0).toUpperCase() + rawMonth.slice(1);
     }
 
     // 2. Grade de dias

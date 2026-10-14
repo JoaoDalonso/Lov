@@ -11,6 +11,9 @@ export class AppController {
     this.models = models;
     this.views = views;
     this.calendarDate = new Date();
+    if (this.calendarDate.getFullYear() < 2000) {
+      this.calendarDate.setFullYear(new Date().getFullYear());
+    }
     this.selectedDateIso = toLocalISODate(new Date());
   }
 
@@ -69,7 +72,7 @@ export class AppController {
   }
 
   _renderCalendar() {
-    const year = this.calendarDate.getFullYear();
+    const year = this.calendarDate.getFullYear() < 2000 ? new Date().getFullYear() : this.calendarDate.getFullYear();
     const month = this.calendarDate.getMonth();
     const selectedDate = parseLocalDate(this.selectedDateIso) || new Date();
     const monthData = this.models.cycle.getMonth(year, month, selectedDate);
@@ -118,8 +121,9 @@ export class AppController {
     // 2. Interatividade da Faixa Semanal (Hoje)
     this.views.week.bindDaySelect((isoDate) => {
       this.selectedDateIso = isoDate;
-      const targetDate = parseLocalDate(isoDate);
-      this.calendarDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), 1);
+      const targetDate = parseLocalDate(isoDate) || new Date();
+      const safeYear = targetDate.getFullYear() < 2000 ? new Date().getFullYear() : targetDate.getFullYear();
+      this.calendarDate = new Date(safeYear, targetDate.getMonth(), 1);
       this._renderAll();
       // Abre a sheet para registrar ou editar o dia selecionado na semana
       this.views.logSheet.openForDate(targetDate);
@@ -170,7 +174,8 @@ export class AppController {
 
     // 7. Navegação mensal no Calendário
     this.views.calendar.bindMonthChange((offset) => {
-      this.calendarDate = new Date(this.calendarDate.getFullYear(), this.calendarDate.getMonth() + offset, 1);
+      const curYear = this.calendarDate.getFullYear() < 2000 ? new Date().getFullYear() : this.calendarDate.getFullYear();
+      this.calendarDate = new Date(curYear, this.calendarDate.getMonth() + offset, 1);
       this._renderCalendar();
     });
 

@@ -17,6 +17,7 @@ export class NavigationView {
     this._setupTabClicks();
     this._setupTabTargetLinks();
     this._setupTouchSwipe();
+    this._setupDragToScroll();
   }
 
   _setupTabClicks() {
@@ -146,6 +147,61 @@ export class NavigationView {
       const isActive = b.dataset.tab === tabName;
       b.classList.toggle('active', isActive);
       b.setAttribute('aria-selected', String(isActive));
+    });
+  }
+
+  /**
+   * Permite arrastar com o mouse para rolar verticalmente
+   * simulando a rolagem tátil de um smartphone no computador/simulador.
+   */
+  _setupDragToScroll() {
+    this.screens.forEach((screen) => {
+      let isDown = false;
+      let startY = 0;
+      let scrollTop = 0;
+      let isDragging = false;
+
+      screen.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        isDown = true;
+        isDragging = false;
+        startY = e.pageY - screen.offsetTop;
+        scrollTop = screen.scrollTop;
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (!isDown) return;
+        isDown = false;
+        setTimeout(() => {
+          isDragging = false;
+        }, 50);
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        const y = e.pageY - screen.offsetTop;
+        const walk = y - startY;
+
+        if (Math.abs(walk) > 5) {
+          isDragging = true;
+        }
+
+        if (isDragging) {
+          screen.scrollTop = scrollTop - walk;
+        }
+      });
+
+      // Se estava arrastando para rolar, previne cliques indesejados ao soltar o mouse
+      screen.addEventListener(
+        'click',
+        (e) => {
+          if (isDragging) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        },
+        true
+      );
     });
   }
 }

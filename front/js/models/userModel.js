@@ -1,6 +1,6 @@
 /**
  * Model: UserModel
- * Perfil do usuário e estado de primeiro acesso.
+ * Perfil do usuário, condições de saúde e preferências de rotina.
  */
 import { readJson, writeJson } from '../utils/storage.js';
 
@@ -35,13 +35,19 @@ export class UserModel {
       email: '',
       goal: 'track',
       remindersEnabled: true,
+      healthConditions: [],
+      routineMedications: [],
       isAuthenticated: false,
       isFirstAccess: true
     };
   }
 
   getProfile() {
-    return { ...this.profile };
+    return {
+      healthConditions: [],
+      routineMedications: [],
+      ...this.profile
+    };
   }
 
   isFirstAccess() {
@@ -59,7 +65,7 @@ export class UserModel {
     return this.updateProfile({
       name: cleanName,
       handle: `@${slugify(cleanName) || 'lov'}`,
-      initials: buildInitials(cleanName) || 'L',
+      initials: buildInitials(cleanName) || 'AJ',
       goal: goal || 'track',
       remindersEnabled: remindersEnabled ?? true,
       isFirstAccess: false

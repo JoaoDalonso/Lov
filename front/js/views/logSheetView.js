@@ -1,7 +1,10 @@
 /**
  * View: LogSheetView
- * Controla a Bottom Sheet de registro diário de sintomas, humor, muco e estilo de vida.
+ * Bottom Sheet de registro diário de sintomas, humor, muco e estilo de vida.
+ * Suporta edição de qualquer data do calendário e fixação de rotina/medicamento padrão.
  */
+import { toLocalISODate, parseLocalDate } from '../utils/dateUtils.js';
+
 const SINGLE_SELECT_GROUPS = ['flow', 'mucus', 'stress', 'contraception'];
 const DEFAULT_TBC = 36.5;
 
@@ -13,7 +16,11 @@ export class LogSheetView {
     this.saveBtn = document.getElementById('saveLog');
     this.closeBtn = document.getElementById('closeLogSheet');
     this.sheetContent = this.sheet ? this.sheet.querySelector('.sheet-content') : null;
+    this.targetDateBadge = document.getElementById('sheetTargetDate');
+    this.sheetHeaderTitle = document.getElementById('sheetHeaderTitle');
+    this.checkPinDefaults = document.getElementById('checkPinDefaults');
 
+    this.currentDate = new Date();
     this.currentTbc = DEFAULT_TBC;
     this.hasModifiedTbc = false;
     this.waterGlasses = 0;
@@ -27,8 +34,7 @@ export class LogSheetView {
   _setupListeners() {
     if (this.openBtn) {
       this.openBtn.addEventListener('click', () => {
-        if (this._onOpen) this._onOpen();
-        this.toggle(true);
+        this.openForDate(new Date());
       });
     }
 
@@ -142,6 +148,22 @@ export class LogSheetView {
     this._renderGlasses(0);
   }
 
+  openForDate(date) {
+    const targetDate = typeof date === 'string' ? parseLocalDate(date) : date;
+    this.currentDate = targetDate || new Date();
+
+    if (this.targetDateBadge) {
+      const isToday = toLocalISODate(this.currentDate) === toLocalISODate(new Date());
+      const formatted = this.currentDate.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
+      this.targetDateBadge.textContent = isToday ? `Hoje · ${formatted}` : formatted;
+    }
+
+    if (this._onOpen) {
+      this._onOpen(this.currentDate);
+    }
+    this.toggle(true);
+  }
+
   bindOpen(handler) {
     this._onOpen = handler;
   }
@@ -153,7 +175,6 @@ export class LogSheetView {
         const container = this.sheet.querySelector(`[data-group="${groupName}"]`);
         if (!container) return [];
         return Array.from(container.querySelectorAll('.opt.on')).map((el) => {
-          // Extrai o texto limpo sem o span do emoji
           const clone = el.cloneNode(true);
           clone.querySelectorAll('span').forEach((s) => s.remove());
           return {
@@ -177,18 +198,24 @@ export class LogSheetView {
         waterGlasses: this.waterGlasses
       };
 
-      handler(logData);
+      const pinDefaults = Boolean(this.checkPinDefaults?.checked);
+      handler(logData, this.currentDate, pinDefaults);
       this.toggle(false);
     });
   }
 
-  populate(logData) {
-    // Limpa seleções anteriores
+  populate(logData, defaults = null) {
     if (this.sheet) {
       this.sheet.querySelectorAll('.opt').forEach((opt) => opt.classList.remove('on'));
     }
 
-    if (!logData) {
+    const dataToUse = logData || (defaults?.pinDefaults ? defaults : null);
+
+    if (this.checkPinDefaults) {
+      this.checkPinDefaults.checked = Boolean(defaults?.pinDefaults);
+    }
+
+    if (!dataToUse) {
       this.hasModifiedTbc = false;
       this.currentTbc = DEFAULT_TBC;
       const display = document.getElementById('displayTbc');
@@ -199,7 +226,6 @@ export class LogSheetView {
       return;
     }
 
-    // Restaura seleções
     const restoreGroup = (groupName, items) => {
       if (!items) return;
       const list = Array.isArray(items) ? items : [items];
@@ -213,18 +239,18 @@ export class LogSheetView {
       });
     };
 
-    restoreGroup('flow', logData.flow);
-    restoreGroup('pain', logData.pain);
-    restoreGroup('mucus', logData.mucus);
-    restoreGroup('mood', logData.mood);
-    restoreGroup('sex', logData.sex);
-    restoreGroup('contraception', logData.contraception);
-    restoreGroup('sleep', logData.sleep);
-    restoreGroup('stress', logData.stress);
-    restoreGroup('lifestyle_habits', logData.lifestyleHabits);
+    restoreGroup('flow', dataToUse.flow);
+    restoreGroup('pain', dataToUse.pain);
+    restoreGroup('mucus', dataToUse.mucus);
+    restoreGroup('mood', dataToUse.mood);
+    restoreGroup('sex', dataToUse.sex);
+    restoreGroup('contraception', dataToUse.contraception || defaults?.contraceptive);
+    restoreGroup('sleep', dataToUse.sleep);
+    restoreGroup('stress', dataToUse.stress);
+    restoreGroup('lifestyle_habits', dataToUse.lifestyleHabits || defaults?.habits);
 
-    if (logData.bbt !== null && logData.bbt !== undefined) {
-      this.currentTbc = logData.bbt;
+    if (dataToUse.bbt !== null && dataToUse.bbt !== undefined) {
+      this.currentTbc = dataToUse.bbt;
       this.hasModifiedTbc = true;
       const display = document.getElementById('displayTbc');
       const slider = document.getElementById('sliderTbc');
@@ -233,7 +259,7 @@ export class LogSheetView {
     }
 
     if (this._renderGlasses) {
-      this._renderGlasses(logData.waterGlasses || 0);
+      this._renderGlasses(dataToUse.waterGlasses || defaults?.waterGlasses || 0);
     }
   }
 

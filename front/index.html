@@ -327,6 +327,37 @@
           <span><i style="background:var(--violet-100)"></i>Janela fértil</span>
           <span><i style="background:var(--violet-500)"></i>Ovulação</span>
         </div>
+
+        <!-- Painel de Ação Rápida do Dia Selecionado -->
+        <div class="cal-day-detail panel" id="calDayDetail">
+          <div class="day-detail-header">
+            <div>
+              <span class="day-detail-badge" id="selectedDayBadge">🌸 Menstruação</span>
+              <h2 id="selectedDayTitle">14 de Outubro</h2>
+              <p class="day-detail-sub" id="selectedDaySub">2º dia do ciclo</p>
+            </div>
+          </div>
+
+          <div class="day-detail-actions">
+            <button class="btn-pill btn-toggle-period" id="btnToggleDayPeriod">
+              <span>🩸</span><span id="btnTogglePeriodText">Marcar menstruação</span>
+            </button>
+            <button class="btn-ghost" id="btnOpenDayLog">
+              <span>✏️</span>Registrar sintomas do dia
+            </button>
+          </div>
+
+          <div class="day-detail-summary" id="selectedDaySummary">
+            <p class="empty-hint">Nenhum sintoma adicional registrado neste dia.</p>
+          </div>
+        </div>
+
+        <!-- Seção de Histórico de Ciclos / Menstruações -->
+        <div class="section-title">
+          <h2>Histórico de Menstruações</h2>
+          <button class="btn-link" id="btnAddPeriodBtn">+ Adicionar ciclo</button>
+        </div>
+        <div class="period-history-list" id="periodHistoryList"></div>
       </section>
 
       <!-- INSIGHTS -->
@@ -422,8 +453,36 @@
         <div class="list">
           <div class="item"><span class="ico">🌙</span><span class="grow">Modo escuro</span><button class="switch"
               id="themeSwitch" role="switch" aria-checked="false" aria-label="Modo escuro"></button></div>
-          <button class="item" data-soon="Mais idiomas em breve 🌐"><span class="ico">🌐</span><span class="grow">Idioma</span><span class="chev">Português ›</span></button>
+        <div class="section-title">
+          <h2>Minha Saúde & Rotina Fixa</h2>
         </div>
+        <div class="list" id="profileRoutineSection">
+          <div class="item">
+            <span class="ico">💊</span>
+            <div class="grow">
+              <strong>Contraceptivo / Remédio habitual</strong>
+              <small id="profileContraceptiveLabel" style="display:block; color:var(--text-muted); font-size:12px;">Pílula anticoncepcional</small>
+            </div>
+            <button class="btn-link" id="btnChangeRoutineContraceptive">Alterar</button>
+          </div>
+          <div class="item">
+            <span class="ico">🩺</span>
+            <div class="grow">
+              <strong>Condições de saúde</strong>
+              <small id="profileConditionsLabel" style="display:block; color:var(--text-muted); font-size:12px;">Nenhuma condição selecionada</small>
+            </div>
+            <button class="btn-link" id="btnManageConditions">Gerenciar</button>
+          </div>
+          <div class="item">
+            <span class="ico">⚡</span>
+            <div class="grow">
+              <strong>Pré-preenchimento automático</strong>
+              <small style="display:block; color:var(--text-muted); font-size:12px;">Aplica remédio e rotina ao abrir novo dia</small>
+            </div>
+            <button class="switch on" id="switchAutoPreFill" role="switch" aria-checked="true"></button>
+          </div>
+        </div>
+
         <div class="list">
           <button class="item" id="btnRestartOnboarding"><span class="ico">⚙️</span><span class="grow">Ajustar ciclo / Onboarding</span><span class="chev">›</span></button>
         </div>
@@ -457,7 +516,8 @@
       <div class="grab"></div>
       <div class="sheet-header">
         <div>
-          <h2>Como você está hoje?</h2>
+          <span class="sheet-target-badge" id="sheetTargetDate">Hoje · 14 de Outubro</span>
+          <h2 id="sheetHeaderTitle">Como você está?</h2>
           <p>Seus registros refinam os cálculos de fertilidade, TPM e ciclo.</p>
         </div>
         <button class="sheet-close-btn" id="closeLogSheet" aria-label="Fechar">✕</button>
@@ -597,6 +657,18 @@
             <button class="opt" data-val="cardio"><span>🏃‍♀️</span>Cardio / Treino</button>
             <button class="opt" data-val="alcohol"><span>🍷</span>Consumiu álcool</button>
           </div>
+
+          <!-- Padrão fixo / rotina diária salva -->
+          <div class="panel pin-defaults-panel">
+            <label class="checkbox-container">
+              <input type="checkbox" id="checkPinDefaults" />
+              <span class="checkmark"></span>
+              <div class="checkbox-text">
+                <strong>📌 Fixar medicamento e hábitos como padrão</strong>
+                <p>O Lov lembrará seu contraceptivo e hábitos nos próximos dias para você não precisar preencher tudo de novo!</p>
+              </div>
+            </label>
+          </div>
         </section>
       </div>
 
@@ -604,6 +676,92 @@
         <button class="btn-pill" id="saveLog">Salvar registro do dia 💗</button>
       </div>
     </aside>
+
+    <!-- MODAL DE ADICIONAR / EDITAR MENSTRUAÇÃO PASSADA -->
+    <div class="modal-overlay" id="periodModal" aria-hidden="true" role="dialog">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="periodModalTitle">Registrar menstruação</h2>
+          <button class="modal-close-btn" id="closePeriodModal" aria-label="Fechar">✕</button>
+        </div>
+        <p class="modal-desc">Adicione ciclos anteriores para que o Lov calcule a duração média e previsões com máxima precisão.</p>
+        
+        <form id="periodForm" onsubmit="return false;" class="modal-form">
+          <input type="hidden" id="periodEditId" />
+          <div class="input-field">
+            <label for="periodStartDateInput">Data de início (1º dia de sangramento)</label>
+            <input type="date" id="periodStartDateInput" class="modern-date-input" required />
+          </div>
+          <div class="input-field">
+            <label for="periodEndDateInput">Data de término (último dia)</label>
+            <input type="date" id="periodEndDateInput" class="modern-date-input" required />
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn-pill" id="btnSavePeriod">Salvar no histórico 🌸</button>
+            <button class="btn-ghost btn-danger" id="btnDeletePeriod" style="display:none;">Excluir este ciclo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL DE CONDIÇÕES DE SAÚDE -->
+    <div class="modal-overlay" id="conditionsModal" aria-hidden="true" role="dialog">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>Condições de saúde</h2>
+          <button class="modal-close-btn" id="closeConditionsModal" aria-label="Fechar">✕</button>
+        </div>
+        <p class="modal-desc">Selecione condições conhecidas para receber alertas, artigos e previsões personalizadas.</p>
+        
+        <div class="conditions-list" id="conditionsCheckList">
+          <label class="checkbox-container">
+            <input type="checkbox" value="sop" />
+            <span class="checkmark"></span>
+            <div class="checkbox-text">
+              <strong>SOP (Síndrome dos Ovários Policísticos)</strong>
+              <p>Ciclos mais longos ou irregulares.</p>
+            </div>
+          </label>
+          <label class="checkbox-container">
+            <input type="checkbox" value="endometriose" />
+            <span class="checkmark"></span>
+            <div class="checkbox-text">
+              <strong>Endometriose</strong>
+              <p>Fluxo mais intenso e cólicas expressivas.</p>
+            </div>
+          </label>
+          <label class="checkbox-container">
+            <input type="checkbox" value="irregular" />
+            <span class="checkmark"></span>
+            <div class="checkbox-text">
+              <strong>Ciclos Irregulares</strong>
+              <p>Durações que variam de mês a mês.</p>
+            </div>
+          </label>
+          <label class="checkbox-container">
+            <input type="checkbox" value="pms_heavy" />
+            <span class="checkmark"></span>
+            <div class="checkbox-text">
+              <strong>TPM Severa / TDPM</strong>
+              <p>Mudanças acentuadas de humor na fase lútea.</p>
+            </div>
+          </label>
+          <label class="checkbox-container">
+            <input type="checkbox" value="migraine" />
+            <span class="checkmark"></span>
+            <div class="checkbox-text">
+              <strong>Enxaqueca Menstrual</strong>
+              <p>Dores de cabeça ligadas à queda de estrogênio.</p>
+            </div>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-pill" id="btnSaveConditions">Salvar preferências 💗</button>
+        </div>
+      </div>
+    </div>
   </div>
   <script type="module" src="js/app.js"></script>
 </body>

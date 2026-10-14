@@ -151,57 +151,91 @@ export class NavigationView {
   }
 
   /**
-   * Permite arrastar com o mouse para rolar verticalmente
+   * Permite arrastar com o mouse para rolar verticalmente na tela ativa,
    * simulando a rolagem tátil de um smartphone no computador/simulador.
+   * NOTA: Limitado EXCLUSIVAMENTE ao pointerType === 'mouse' para não interferir
+   * nem travar a rolagem nativa de toque e inércia do iOS Safari / Android.
    */
   _setupDragToScroll() {
-    this.screens.forEach((screen) => {
-      let isDown = false;
-      let startY = 0;
-      let scrollTop = 0;
-      let isDragging = false;
+    if (!this.screensContainer) return;
 
-      screen.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return;
-        isDown = true;
-        isDragging = false;
-        startY = e.pageY - screen.offsetTop;
-        scrollTop = screen.scrollTop;
-      });
+    let isDown = false;
+    let startY = 0;
+    let startScrollTop = 0;
+    let isDragging = false;
+    let activeScreen = null;
 
-      window.addEventListener('mouseup', () => {
-        if (!isDown) return;
-        isDown = false;
-        setTimeout(() => {
-          isDragging = false;
-        }, 50);
-      });
+    this.screensContainer.addEventListener('pointerdown', (e) => {
+      // APENAS MOUSE: Dispositivos de toque (iOS / Android) usam a rolagem nativa suave do navegador
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      if (e.target.closest('input, select, textarea, [data-no-drag]')) return;
 
-      window.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        const y = e.pageY - screen.offsetTop;
-        const walk = y - startY;
+      activeScreen = this.screens.find((s) => s.classList.contains('active'));
+      if (!activeScreen) return;
 
-        if (Math.abs(walk) > 5) {
+      isDown = true;
+      isDragging = false;
+      startY = e.clientY;
+      startScrollTop = activeScreen.scrollTop;
+
+      try {
+        this.screensContainer.setPointerCapture(e.pointerId);
+      } catch (_) {}
+    });
+
+    window.addEventListener(
+      'pointermove',
+      (e) => {
+        if (!isDown || !activeScreen || e.pointerType !== 'mouse') return;
+        const diffY = e.clientY - startY;
+
+        if (Math.abs(diffY) > 5) {
           isDragging = true;
+          document.body.style.userSelect = 'none';
         }
 
         if (isDragging) {
-          screen.scrollTop = scrollTop - walk;
-        }
-      });
-
-      // Se estava arrastando para rolar, previne cliques indesejados ao soltar o mouse
-      screen.addEventListener(
-        'click',
-        (e) => {
-          if (isDragging) {
+          activeScreen.scrollTop = startScrollTop - diffY;
+          if (e.cancelable) {
             e.preventDefault();
-            e.stopPropagation();
           }
-        },
-        true
-      );
-    });
+        }
+      },
+      { passive: false }
+    );
+
+    const endDrag = (e) => {
+      if (!isDown) return;
+      isDown = false;
+      document.body.style.userSelect = '';
+
+      if (e && e.pointerId) {
+        try {
+          if (this.screensContainer.hasPointerCapture(e.pointerId)) {
+            this.screensContainer.releasePointerCapture(e.pointerId);
+          }
+        } catch (_) {}
+      }
+
+      setTimeout(() => {
+        isDragging = false;
+        activeScreen = null;
+      }, 50);
+    };
+
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+
+    // Se estava arrastando para rolar, previne cliques indesejados ao soltar o mouse
+    this.screensContainer.addEventListener(
+      'click',
+      (e) => {
+        if (isDragging) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      },
+      true
+    );
   }
 }

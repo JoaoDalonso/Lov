@@ -15,6 +15,242 @@
   <div class="app" id="app">
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+    <!-- ONBOARDING & LOGIN OVERLAY -->
+    <div class="onboarding-overlay" id="onboardingOverlay" aria-modal="true" role="dialog">
+      <div class="onboarding-progress-bar">
+        <div class="onboarding-progress-fill" id="onboardingProgressFill"></div>
+      </div>
+
+      <!-- STEP 0: Boas-vindas (Welcome) -->
+      <div class="onboarding-step active" id="step-welcome">
+        <div class="onboarding-hero">
+          <div class="onboarding-badge-icon">🌸</div>
+          <span class="brand-sub">LUME HEALTH</span>
+          <h1 class="onboarding-title">Seu corpo, seu ciclo, seu ritmo.</h1>
+          <p class="onboarding-desc">Acompanhe seu ciclo menstrual com previsões inteligentes de período, ovulação e uma assistente acolhedora.</p>
+          
+          <div class="privacy-pill">
+            <span class="ico">🔒</span>
+            <span>Privacidade total: seus dados de saúde protegidos e confidenciais.</span>
+          </div>
+        </div>
+
+        <div class="onboarding-actions">
+          <button class="btn-pill" id="btnStartOnboarding">Iniciar minha jornada ✨</button>
+          <button class="btn-ghost" id="btnGoToAuth">Já tenho uma conta (Entrar)</button>
+        </div>
+      </div>
+
+      <!-- STEP 1: Login / Cadastro Social -->
+      <div class="onboarding-step" id="step-auth">
+        <header class="wizard-header">
+          <button class="back-btn" data-prev-step="0" aria-label="Voltar">‹</button>
+          <span class="step-badge">Conta & Acesso</span>
+        </header>
+
+        <h2 class="wizard-title">Acesse ou crie sua conta</h2>
+        <p class="wizard-subtitle">Salve suas previsões e sincronize seus sintomas com total segurança.</p>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-mode="signup">Criar conta</button>
+          <button class="auth-tab" data-mode="signin">Entrar</button>
+        </div>
+
+        <div class="social-buttons">
+          <button class="btn-social" id="btnGoogleAuth">
+            <svg viewBox="0 0 24 24" class="social-icon">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            Continuar com o Google
+          </button>
+
+          <button class="btn-social" id="btnAppleAuth">
+            <svg viewBox="0 0 24 24" class="social-icon" fill="currentColor">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.77 1.04-1.85.93-2.92-.9.04-1.99.6-2.63 1.36-.57.65-1.06 1.74-.93 2.8.99.08 2.01-.48 2.63-1.24z"/>
+            </svg>
+            Continuar com Apple
+          </button>
+        </div>
+
+        <div class="auth-divider"><span>ou com seu e-mail</span></div>
+
+        <form class="auth-form" onsubmit="return false;">
+          <div class="input-field">
+            <label for="inputAuthEmail">Seu e-mail</label>
+            <input type="email" id="inputAuthEmail" placeholder="exemplo@email.com" value="anajulia@exemplo.com" />
+          </div>
+          <div class="input-field">
+            <label for="inputAuthPassword">Sua senha</label>
+            <input type="password" id="inputAuthPassword" placeholder="••••••••" value="senha1234" />
+          </div>
+          <button class="btn-pill" id="btnSubmitAuth">Criar minha conta 🌸</button>
+        </form>
+
+        <button class="btn-link" id="btnSkipAuth">Pular e continuar sem conta por enquanto ›</button>
+      </div>
+
+      <!-- STEP 2: Objetivo Principal -->
+      <div class="onboarding-step" id="step-goal">
+        <header class="wizard-header">
+          <button class="back-btn" data-prev-step="0" aria-label="Voltar">‹</button>
+          <span class="step-badge">1 de 4</span>
+        </header>
+
+        <h2 class="wizard-title">Qual é o seu objetivo?</h2>
+        <p class="wizard-subtitle">Personalizaremos suas previsões e dicas para este momento.</p>
+
+        <div class="choices-list">
+          <button class="choice-card selected" data-goal="track">
+            <span class="choice-icon">🌸</span>
+            <div class="choice-info">
+              <h3>Acompanhar meu ciclo</h3>
+              <p>Prever a próxima menstruação e registrar sintomas do dia a dia.</p>
+            </div>
+            <span class="choice-radio"></span>
+          </button>
+
+          <button class="choice-card" data-goal="pregnancy">
+            <span class="choice-icon">👶</span>
+            <div class="choice-info">
+              <h3>Planejar gravidez</h3>
+              <p>Identificar os dias férteis e a data exata da ovulação.</p>
+            </div>
+            <span class="choice-radio"></span>
+          </button>
+
+          <button class="choice-card" data-goal="prevent">
+            <span class="choice-icon">🛡️</span>
+            <div class="choice-info">
+              <h3>Evitar gravidez naturalmente</h3>
+              <p>Conhecer minha janela fértil e sinais corporais.</p>
+            </div>
+            <span class="choice-radio"></span>
+          </button>
+
+          <button class="choice-card" data-goal="body">
+            <span class="choice-icon">🌿</span>
+            <div class="choice-info">
+              <h3>Entender meu corpo e humor</h3>
+              <p>Mapear variações hormonais, TPM, sono e energia.</p>
+            </div>
+            <span class="choice-radio"></span>
+          </button>
+        </div>
+
+        <button class="btn-pill" data-next-step="3">Continuar ›</button>
+      </div>
+
+      <!-- STEP 3: Data da Última Menstruação -->
+      <div class="onboarding-step" id="step-last-period">
+        <header class="wizard-header">
+          <button class="back-btn" data-prev-step="2" aria-label="Voltar">‹</button>
+          <span class="step-badge">2 de 4</span>
+        </header>
+
+        <h2 class="wizard-title">Quando começou sua última menstruação?</h2>
+        <p class="wizard-subtitle">Essa data define o cálculo da fase e do dia em que você está hoje.</p>
+
+        <div class="date-quick-picker">
+          <button class="date-quick-btn" data-days-ago="0">Hoje</button>
+          <button class="date-quick-btn" data-days-ago="1">Ontem</button>
+          <button class="date-quick-btn active" data-days-ago="4">Há 4 dias</button>
+          <button class="date-quick-btn" data-days-ago="7">Há 1 semana</button>
+        </div>
+
+        <div class="panel date-input-panel">
+          <label for="inputLastPeriodDate">Ou escolha a data no calendário:</label>
+          <input type="date" id="inputLastPeriodDate" class="modern-date-input" />
+        </div>
+
+        <div class="info-tip">
+          <span>💡</span>
+          <p>Se não tiver certeza absoluta, coloque uma data aproximada. Você pode corrigir a qualquer momento no calendário!</p>
+        </div>
+
+        <button class="btn-pill" data-next-step="4">Continuar ›</button>
+      </div>
+
+      <!-- STEP 4: Duração da Menstruação e Ciclo -->
+      <div class="onboarding-step" id="step-cycle-duration">
+        <header class="wizard-header">
+          <button class="back-btn" data-prev-step="3" aria-label="Voltar">‹</button>
+          <span class="step-badge">3 de 4</span>
+        </header>
+
+        <h2 class="wizard-title">Duração habitual</h2>
+        <p class="wizard-subtitle">Ajuste os valores para suas médias mais frequentes.</p>
+
+        <div class="stepper-card">
+          <div class="stepper-text">
+            <h3>Duração da menstruação</h3>
+            <p>Quantos dias costuma durar seu sangramento?</p>
+          </div>
+          <div class="stepper-controls">
+            <button class="stepper-btn" id="btnPeriodMinus" aria-label="Diminuir dias">–</button>
+            <span class="stepper-value" id="displayPeriodDays">5 dias</span>
+            <button class="stepper-btn" id="btnPeriodPlus" aria-label="Aumentar dias">+</button>
+          </div>
+        </div>
+
+        <div class="stepper-card">
+          <div class="stepper-text">
+            <h3>Duração total do ciclo</h3>
+            <p>Do 1º dia de menstruação até a véspera da seguinte.</p>
+          </div>
+          <div class="stepper-controls">
+            <button class="stepper-btn" id="btnCycleMinus" aria-label="Diminuir ciclo">–</button>
+            <span class="stepper-value" id="displayCycleDays">28 dias</span>
+            <button class="stepper-btn" id="btnCyclePlus" aria-label="Aumentar ciclo">+</button>
+          </div>
+        </div>
+
+        <button class="btn-pill" data-next-step="5">Continuar ›</button>
+      </div>
+
+      <!-- STEP 5: Perfil e Lembretes -->
+      <div class="onboarding-step" id="step-profile">
+        <header class="wizard-header">
+          <button class="back-btn" data-prev-step="4" aria-label="Voltar">‹</button>
+          <span class="step-badge">4 de 4</span>
+        </header>
+
+        <h2 class="wizard-title">Personalização final</h2>
+        <p class="wizard-subtitle">Como deseja que o app fale com você?</p>
+
+        <div class="input-field name-field">
+          <label for="inputUserName">Como podemos te chamar?</label>
+          <input type="text" id="inputUserName" value="Ana Julia" placeholder="Seu nome ou apelido" maxlength="30" />
+        </div>
+
+        <div class="panel reminder-panel">
+          <div class="reminder-info">
+            <span class="ico">🔔</span>
+            <div>
+              <h3>Lembretes discretos</h3>
+              <p>Avisar 2 dias antes do período e no início da janela fértil.</p>
+            </div>
+          </div>
+          <button class="switch on" id="switchReminders" role="switch" aria-checked="true" aria-label="Lembretes"></button>
+        </div>
+
+        <button class="btn-pill" id="btnFinishOnboarding">Calcular e ver meu ciclo 🌸</button>
+      </div>
+
+      <!-- STEP 6: Animação de Cálculo e Sucesso -->
+      <div class="onboarding-step" id="step-calculating">
+        <div class="calculating-box">
+          <div class="calc-pulse-ring">
+            <div class="calc-pulse-core">🌸</div>
+          </div>
+          <h2>Personalizando seu Lume...</h2>
+          <p>Calculando fases hormonais, janela fértil e preparando seu anel de ciclo.</p>
+        </div>
+      </div>
+    </div>
+
     <main class="screens">
       <!-- HOJE -->
       <section class="screen active" id="screen-today" aria-label="Hoje">
@@ -165,6 +401,9 @@
               id="themeSwitch" role="switch" aria-checked="false" aria-label="Modo escuro"></button></div>
           <button class="item"><span class="ico">🌐</span><span class="grow">Idioma</span><span class="chev">Português
               ›</span></button>
+        </div>
+        <div class="list">
+          <button class="item" id="btnRestartOnboarding"><span class="ico">⚙️</span><span class="grow">Ajustar ciclo / Onboarding</span><span class="chev">›</span></button>
         </div>
       </section>
     </main>

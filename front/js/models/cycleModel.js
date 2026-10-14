@@ -1,6 +1,6 @@
 /**
  * Model: CycleModel
- * Responsável pelas regras de negócio do ciclo menstrual, cálculos e persistência.
+ * Responsável pelas regras de negócio do ciclo menstrual, cálculos e persistência no padrão MVC.
  */
 export class CycleModel {
   constructor() {
@@ -51,6 +51,47 @@ export class CycleModel {
     return {};
   }
 
+  _saveCycle() {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.cycle));
+  }
+
+  /**
+   * Configura o ciclo dinamicamente a partir dos dados do Onboarding
+   */
+  setupInitialCycle(startDateStr, cycleLength = 28, periodLength = 5) {
+    const cleanCycleLength = Math.max(21, Math.min(45, parseInt(cycleLength, 10) || 28));
+    const cleanPeriodLength = Math.max(2, Math.min(10, parseInt(periodLength, 10) || 5));
+
+    const now = new Date();
+    const todayZero = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    let startDate = new Date(startDateStr);
+    if (isNaN(startDate.getTime()) || startDate > todayZero) {
+      startDate = new Date(todayZero);
+    }
+    const startZero = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+
+    const diffMs = todayZero.getTime() - startZero.getTime();
+    const diffDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+
+    const todayCycleDay = (diffDays % cleanCycleLength) + 1;
+    const ovulation = Math.max(cleanPeriodLength + 1, cleanCycleLength - 14);
+    const fertileStart = Math.max(cleanPeriodLength + 1, ovulation - 5);
+    const fertileEnd = Math.min(cleanCycleLength, ovulation + 1);
+
+    this.cycle = {
+      length: cleanCycleLength,
+      period: cleanPeriodLength,
+      ovulation,
+      fertile: [fertileStart, fertileEnd],
+      todayCycleDay,
+      lastPeriodStartDate: startDate.toISOString().split('T')[0]
+    };
+
+    this._saveCycle();
+    return this.getCycleInfo();
+  }
+
   getCycleInfo() {
     const today = this.cycle.todayCycleDay;
     const daysRemaining = this.cycle.length - today + 1;
@@ -76,7 +117,8 @@ export class CycleModel {
       fertileRange: this.cycle.fertile,
       phase,
       phaseColor,
-      daysRemaining
+      daysRemaining,
+      lastPeriodStartDate: this.cycle.lastPeriodStartDate
     };
   }
 

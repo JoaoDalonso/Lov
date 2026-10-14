@@ -47,4 +47,11 @@ export class ProfileView {
       this.themeSwitch.setAttribute('aria-checked', String(isDark));
     }
   }
+
+  bindRestartOnboarding(handler) {
+    const btn = document.getElementById('btnRestartOnboarding');
+    if (btn) {
+      btn.onclick = () => handler();
+    }
+  }
 }

@@ -11,6 +11,7 @@ import { InsightsView } from './views/insightsView.js';
 import { LogSheetView } from './views/logSheetView.js';
 import { NavigationView } from './views/navigationView.js';
 import { ProfileView } from './views/profileView.js';
+import { OnboardingView } from './views/onboardingView.js';
 import { AppController } from './controllers/appController.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -28,7 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     insights: new InsightsView(),
     logSheet: new LogSheetView(),
     navigation: new NavigationView(),
-    profile: new ProfileView()
+    profile: new ProfileView(),
+    onboarding: new OnboardingView()
   };
 
   // 3. Controller

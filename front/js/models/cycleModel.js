@@ -4,9 +4,9 @@
  */
 export class CycleModel {
   constructor() {
-    this.storageKey = 'lume_cycle_data';
-    this.logsKey = 'lume_daily_logs';
-    this.themeKey = 'lume_theme';
+    this.storageKey = 'lov_cycle_data';
+    this.logsKey = 'lov_daily_logs';
+    this.themeKey = 'lov_theme';
 
     this.defaultCycle = {
       length: 28,
@@ -28,7 +28,7 @@ export class CycleModel {
   }
 
   _loadCycle() {
-    const saved = localStorage.getItem(this.storageKey);
+    const saved = localStorage.getItem(this.storageKey) || localStorage.getItem('lume_cycle_data');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -40,7 +40,7 @@ export class CycleModel {
   }
 
   _loadLogs() {
-    const saved = localStorage.getItem(this.logsKey);
+    const saved = localStorage.getItem(this.logsKey) || localStorage.getItem('lume_daily_logs');
     if (saved) {
       try {
         return JSON.parse(saved);

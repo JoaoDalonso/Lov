@@ -4,12 +4,12 @@
  */
 export class UserModel {
   constructor() {
-    this.storageKey = 'lume_user_profile';
+    this.storageKey = 'lov_user_profile';
     this.profile = this._loadProfile();
   }
 
   _loadProfile() {
-    const saved = localStorage.getItem(this.storageKey);
+    const saved = localStorage.getItem(this.storageKey) || localStorage.getItem('lume_user_profile');
     if (saved) {
       try {
         return JSON.parse(saved);

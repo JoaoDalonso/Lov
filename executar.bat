@@ -1,12 +1,12 @@
 @echo off
 chcp 65001 >nul
-title Lume - servidor local
+title Lov - servidor local
 cd /d "%~dp0front"
 
 set PORT=5500
 echo.
 echo  ========================================
-echo   Lume - rodando em http://localhost:%PORT%
+echo   Lov - rodando em http://localhost:%PORT%
 echo   Dica: aperte F12 e ative o modo celular
 echo   (Ctrl+Shift+M) para ver como no mobile.
 echo   Feche esta janela para parar o servidor.

@@ -1,8 +1,8 @@
-# Backend — Lume API (Java + Spring Boot)
+# Backend — Lov API (Java + Spring Boot)
 
 ## 📌 Arquitetura e Especificação (Spring MVC)
 
-Este módulo abrigará a API RESTful e WebSocket do ecossistema **Lume**, implementada em **Java 21** e **Spring Boot 3.x**.
+Este módulo abrigará a API RESTful e WebSocket do ecossistema **Lov**, implementada em **Java 21** e **Spring Boot 3.x**.
 
 ### 🏛️ Padrão Arquitetural
 

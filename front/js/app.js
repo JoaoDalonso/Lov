@@ -1,6 +1,6 @@
 /**
  * Ponto de entrada (Main Entry Point)
- * Inicialização da arquitetura MVC do Lume.
+ * Inicialização da arquitetura MVC do Lov.
  */
 import { CycleModel } from './models/cycleModel.js';
 import { UserModel } from './models/userModel.js';

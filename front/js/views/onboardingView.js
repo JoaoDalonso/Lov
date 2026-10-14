@@ -23,6 +23,10 @@ export class OnboardingView {
 
     this.currentStepIndex = 0;
     this._setupDOMListeners();
+
+    if (this.container && !this.container.classList.contains('active')) {
+      this.hide();
+    }
   }
 
   setInitialValues(profile) {
@@ -139,6 +143,7 @@ export class OnboardingView {
   show() {
     if (!this.container) return;
     this.container.classList.add('active');
+    this.container.setAttribute('aria-hidden', 'false');
     this.container.inert = false;
     this.goToStep(0);
   }
@@ -146,7 +151,9 @@ export class OnboardingView {
   hide() {
     if (!this.container) return;
     this.container.classList.remove('active');
+    this.container.setAttribute('aria-hidden', 'true');
     this.container.inert = true;
+    this.steps.forEach((step) => step.classList.remove('active'));
   }
 
   goToStep(index) {

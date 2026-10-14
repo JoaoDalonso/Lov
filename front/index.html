@@ -150,24 +150,26 @@
           <span class="step-badge">2 de 4</span>
         </header>
 
-        <h2 class="wizard-title">Quando começou sua última menstruação?</h2>
-        <p class="wizard-subtitle">Essa data define o cálculo da fase e do dia em que você está hoje.</p>
+        <h2 class="wizard-title">Início da última menstruação</h2>
+        <p class="wizard-subtitle">É o <strong>primeiro dia em que o sangramento de fato começou</strong> (não considere pequenos escapes ou spotting).</p>
 
         <div class="date-quick-picker">
           <button class="date-quick-btn" data-days-ago="0">Hoje</button>
           <button class="date-quick-btn" data-days-ago="1">Ontem</button>
-          <button class="date-quick-btn active" data-days-ago="4">Há 4 dias</button>
+          <button class="date-quick-btn active" data-days-ago="2">Há 2 dias</button>
+          <button class="date-quick-btn" data-days-ago="4">Há 4 dias</button>
           <button class="date-quick-btn" data-days-ago="7">Há 1 semana</button>
+          <button class="date-quick-btn" data-days-ago="14">Há 2 semanas</button>
         </div>
 
         <div class="panel date-input-panel">
-          <label for="inputLastPeriodDate">Ou escolha a data no calendário:</label>
+          <label for="inputLastPeriodDate">Ou toque para escolher a data exata:</label>
           <input type="date" id="inputLastPeriodDate" class="modern-date-input" />
         </div>
 
         <div class="info-tip">
           <span>💡</span>
-          <p>Se não tiver certeza absoluta, coloque uma data aproximada. Você pode corrigir a qualquer momento no calendário!</p>
+          <p>O primeiro dia de fluxo vermelho vivo marca o <strong>Dia 1 do seu ciclo</strong>. Se não lembrar com precisão, coloque uma data aproximada!</p>
         </div>
 
         <button class="btn-pill" data-next-step="4">Continuar ›</button>
@@ -180,13 +182,13 @@
           <span class="step-badge">3 de 4</span>
         </header>
 
-        <h2 class="wizard-title">Duração habitual</h2>
-        <p class="wizard-subtitle">Ajuste os valores para suas médias mais frequentes.</p>
+        <h2 class="wizard-title">Duração e intervalo</h2>
+        <p class="wizard-subtitle">Personalize com base no comportamento habitual do seu corpo.</p>
 
         <div class="stepper-card">
           <div class="stepper-text">
-            <h3>Duração da menstruação</h3>
-            <p>Quantos dias costuma durar seu sangramento?</p>
+            <h3>Duração média da menstruação</h3>
+            <p>Quantos dias o sangramento costuma durar (geralmente entre 3 e 7 dias).</p>
           </div>
           <div class="stepper-controls">
             <button class="stepper-btn" id="btnPeriodMinus" aria-label="Diminuir dias">–</button>
@@ -195,15 +197,37 @@
           </div>
         </div>
 
-        <div class="stepper-card">
+        <div class="stepper-card" id="cardCycleLength">
           <div class="stepper-text">
-            <h3>Duração total do ciclo</h3>
-            <p>Do 1º dia de menstruação até a véspera da seguinte.</p>
+            <h3>Duração média do ciclo</h3>
+            <p>O intervalo entre o 1º dia de uma menstruação e o 1º dia da próxima (padrão de 28 dias).</p>
           </div>
           <div class="stepper-controls">
             <button class="stepper-btn" id="btnCycleMinus" aria-label="Diminuir ciclo">–</button>
             <span class="stepper-value" id="displayCycleDays">28 dias</span>
             <button class="stepper-btn" id="btnCyclePlus" aria-label="Aumentar ciclo">+</button>
+          </div>
+        </div>
+
+        <div class="panel unknown-cycle-panel">
+          <label class="checkbox-container">
+            <input type="checkbox" id="checkUnknownCycle" />
+            <span class="checkmark"></span>
+            <div class="checkbox-text">
+              <strong>Não sei a duração média do meu ciclo</strong>
+              <p>Usaremos a média de 28 dias e o Lov ajustará o cálculo automaticamente nos próximos meses conforme você registrar novos dados.</p>
+            </div>
+          </label>
+        </div>
+
+        <div class="panel contraceptive-panel">
+          <label>Você utiliza algum método contraceptivo?</label>
+          <div class="contraceptive-pills" id="contraceptivePills">
+            <button class="pill-opt active" data-val="none">Nenhum</button>
+            <button class="pill-opt" data-val="pill">Pílula</button>
+            <button class="pill-opt" data-val="iud">DIU</button>
+            <button class="pill-opt" data-val="condom">Preservativo</button>
+            <button class="pill-opt" data-val="other">Outro</button>
           </div>
         </div>
 
@@ -433,28 +457,154 @@
     <div class="scrim" id="scrim"></div>
     <aside class="sheet" id="sheet" aria-label="Registrar o dia" aria-hidden="true">
       <div class="grab"></div>
-      <h2>Como você está hoje?</h2>
-      <p>Toque para selecionar. Seus dados ficam só com você.</p>
-      <h4>Fluxo</h4>
-      <div class="opts" data-group="flow">
-        <button class="opt"><span>💧</span>Spotting</button><button class="opt"><span>🩸</span>Leve</button><button
-          class="opt"><span>🩸🩸</span>Médio</button><button class="opt"><span>🌊</span>Intenso</button>
+      <div class="sheet-header">
+        <div>
+          <h2>Como você está hoje?</h2>
+          <p>Seus registros refinam os cálculos de fertilidade, TPM e ciclo.</p>
+        </div>
+        <button class="sheet-close-btn" id="closeLogSheet" aria-label="Fechar">✕</button>
       </div>
-      <h4>Humor</h4>
-      <div class="opts">
-        <button class="opt"><span>😊</span>Feliz</button><button class="opt"><span>😌</span>Calma</button><button
-          class="opt"><span>🥺</span>Sensível</button><button class="opt"><span>😠</span>Irritada</button>
-        <button class="opt"><span>😰</span>Ansiosa</button><button class="opt"><span>😢</span>Triste</button><button
-          class="opt"><span>⚡</span>Energia</button><button class="opt"><span>🥱</span>Cansada</button>
+
+      <!-- Abas de Categoria da Sheet -->
+      <div class="sheet-cat-chips" id="sheetCatChips">
+        <button class="sheet-chip active" data-target="cat-flow">🩸 Fluxo & Dores</button>
+        <button class="sheet-chip" data-target="cat-fertility">🌡️ Muco & TBC</button>
+        <button class="sheet-chip" data-target="cat-mood">🧠 Humor & Sexo</button>
+        <button class="sheet-chip" data-target="cat-lifestyle">🌿 Estilo de Vida</button>
       </div>
-      <h4>Sintomas</h4>
-      <div class="opts">
-        <button class="opt"><span>🤕</span>Cólica</button><button class="opt"><span>💢</span>Cabeça</button><button
-          class="opt"><span>🎈</span>Inchaço</button><button class="opt"><span>🍫</span>Desejo</button>
-        <button class="opt"><span>🔙</span>Lombar</button><button class="opt"><span>🤢</span>Náusea</button><button
-          class="opt"><span>🌙</span>Insônia</button><button class="opt"><span>✨</span>Acne</button>
+
+      <div class="sheet-content">
+        <!-- 1. FLUXO E DORES -->
+        <section class="sheet-section" id="cat-flow">
+          <h4>Intensidade do Sangramento / Fluxo</h4>
+          <div class="opts" data-group="flow">
+            <button class="opt" data-val="none"><span>⚪</span>Nenhum</button>
+            <button class="opt" data-val="spotting"><span>💧</span>Spotting</button>
+            <button class="opt" data-val="light"><span>🩸</span>Leve</button>
+            <button class="opt" data-val="medium"><span>🩸🩸</span>Moderado</button>
+            <button class="opt" data-val="heavy"><span>🌊</span>Intenso</button>
+          </div>
+
+          <h4>Cólicas e Dores Físicas</h4>
+          <div class="opts" data-group="pain">
+            <button class="opt" data-val="cramp-light"><span>🤕</span>Cólica leve</button>
+            <button class="opt" data-val="cramp-heavy"><span>⚡</span>Cólica forte</button>
+            <button class="opt" data-val="headache"><span>💢</span>Dor de cabeça</button>
+            <button class="opt" data-val="breasts"><span>👙</span>Seios sensíveis</button>
+            <button class="opt" data-val="back"><span>🔙</span>Dor lombar</button>
+            <button class="opt" data-val="bloating"><span>🎈</span>Inchaço</button>
+            <button class="opt" data-val="nausea"><span>🤢</span>Náusea</button>
+            <button class="opt" data-val="acne"><span>✨</span>Acne / Pele</button>
+          </div>
+        </section>
+
+        <!-- 2. MUCO CERVICAL E TEMPERATURA BASAL (TBC) -->
+        <section class="sheet-section" id="cat-fertility">
+          <h4>Muco Cervical (Textura da Secreção)</h4>
+          <p class="section-hint">A secreção vaginal indica com alta precisão seus dias de fertilidade.</p>
+          <div class="opts" data-group="mucus">
+            <button class="opt" data-val="dry"><span>🌵</span>Seco / Nenhum</button>
+            <button class="opt" data-val="sticky"><span>🍯</span>Pegajoso</button>
+            <button class="opt" data-val="creamy"><span>🥛</span>Cremoso</button>
+            <button class="opt" data-val="watery"><span>💧</span>Aquoso</button>
+            <button class="opt highlight" data-val="eggwhite"><span>🥚</span>Clara de ovo (Fértil!)</button>
+          </div>
+
+          <h4>Temperatura Basal Corporal (TBC)</h4>
+          <div class="panel tbc-panel">
+            <div class="tbc-header">
+              <div>
+                <strong>Temperatura ao acordar</strong>
+                <p>Sobe ligeiramente (~0,3°C) logo após a ovulação.</p>
+              </div>
+              <span class="tbc-display" id="displayTbc">36.5 °C</span>
+            </div>
+            <div class="tbc-stepper">
+              <button class="stepper-btn" id="btnTbcMinus" aria-label="Diminuir temperatura">–</button>
+              <input type="range" id="sliderTbc" min="35.5" max="38.0" step="0.1" value="36.5" class="tbc-slider" />
+              <button class="stepper-btn" id="btnTbcPlus" aria-label="Aumentar temperatura">+</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. HUMOR E ATIVIDADE SEXUAL -->
+        <section class="sheet-section" id="cat-mood">
+          <h4>Mudanças de Humor</h4>
+          <div class="opts" data-group="mood">
+            <button class="opt" data-val="happy"><span>😊</span>Feliz</button>
+            <button class="opt" data-val="calm"><span>😌</span>Calma</button>
+            <button class="opt" data-val="sensitive"><span>🥺</span>Sensível</button>
+            <button class="opt" data-val="irritated"><span>😠</span>Irritada</button>
+            <button class="opt" data-val="anxious"><span>😰</span>Ansiosa</button>
+            <button class="opt" data-val="sad"><span>😢</span>Triste</button>
+            <button class="opt" data-val="energetic"><span>⚡</span>Energia alta</button>
+            <button class="opt" data-val="swings"><span>🎭</span>Oscilações</button>
+          </div>
+
+          <h4>Atividade Sexual & Libido</h4>
+          <div class="opts" data-group="sex">
+            <button class="opt" data-val="none"><span>🕊️</span>Sem relação</button>
+            <button class="opt" data-val="protected"><span>🛡️</span>Com proteção</button>
+            <button class="opt" data-val="unprotected"><span>⚠️</span>Sem proteção</button>
+            <button class="opt" data-val="masturbation"><span>💖</span>Masturbação</button>
+            <button class="opt" data-val="high-libido"><span>🔥</span>Alta libido</button>
+            <button class="opt" data-val="low-libido"><span>💤</span>Baixa libido</button>
+          </div>
+        </section>
+
+        <!-- 4. ESTILO DE VIDA E CONTRACEPÇÃO -->
+        <section class="sheet-section" id="cat-lifestyle">
+          <h4>Método Contraceptivo / Pílula</h4>
+          <div class="opts" data-group="contraception">
+            <button class="opt" data-val="pill-taken"><span>💊</span>Tomou no horário</button>
+            <button class="opt" data-val="pill-missed"><span>⏰</span>Atrasou / Esqueceu</button>
+            <button class="opt" data-val="pill-emergency"><span>🚨</span>Pílula dia seguinte</button>
+            <button class="opt" data-val="iud"><span>📍</span>DIU / Implante</button>
+          </div>
+
+          <h4>Sono & Descanso</h4>
+          <div class="opts" data-group="sleep">
+            <button class="opt" data-val="good-sleep"><span>😴</span>Sono reparador</button>
+            <button class="opt" data-val="insomnia"><span>🥱</span>Insônia</button>
+            <button class="opt" data-val="restless"><span>⚡</span>Sono agitado</button>
+            <button class="opt" data-val="tired"><span>💤</span>Acordou cansada</button>
+          </div>
+
+          <h4>Nível de Estresse</h4>
+          <div class="opts" data-group="stress">
+            <button class="opt" data-val="low"><span>🧘‍♀️</span>Baixo</button>
+            <button class="opt" data-val="medium"><span>⚖️</span>Médio</button>
+            <button class="opt" data-val="high"><span>🤯</span>Alto estresse</button>
+          </div>
+
+          <h4>Consumo de Água (Hidratação)</h4>
+          <div class="water-tracker">
+            <div class="water-glasses" id="waterGlassesContainer">
+              <button class="water-glass" data-idx="1">💧</button>
+              <button class="water-glass" data-idx="2">💧</button>
+              <button class="water-glass" data-idx="3">💧</button>
+              <button class="water-glass" data-idx="4">💧</button>
+              <button class="water-glass" data-idx="5">💧</button>
+              <button class="water-glass" data-idx="6">💧</button>
+              <button class="water-glass" data-idx="7">💧</button>
+              <button class="water-glass" data-idx="8">💧</button>
+            </div>
+            <span class="water-label" id="displayWaterLabel">6 copos (1.5L)</span>
+          </div>
+
+          <h4>Exercício & Hábitos</h4>
+          <div class="opts" data-group="lifestyle_habits">
+            <button class="opt" data-val="rest"><span>🛋️</span>Repouso</button>
+            <button class="opt" data-val="yoga"><span>🧘</span>Alongamento/Yoga</button>
+            <button class="opt" data-val="cardio"><span>🏃‍♀️</span>Cardio / Treino</button>
+            <button class="opt" data-val="alcohol"><span>🍷</span>Consumiu álcool</button>
+          </div>
+        </section>
       </div>
-      <button class="btn-pill" id="saveLog">Salvar registro</button>
+
+      <div class="sheet-footer">
+        <button class="btn-pill" id="saveLog">Salvar registro do dia 💗</button>
+      </div>
     </aside>
   </div>
   <script type="module" src="js/app.js"></script>

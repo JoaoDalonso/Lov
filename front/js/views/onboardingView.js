@@ -10,9 +10,11 @@ export class OnboardingView {
     
     // Controles de valor
     this.selectedGoal = 'track';
-    this.selectedDate = this._getDefaultStartDate(4);
+    this.selectedDate = this._getDefaultStartDate(2);
     this.periodDays = 5;
     this.cycleDays = 28;
+    this.isUnknownCycle = false;
+    this.selectedContraceptive = 'none';
     this.userName = 'Ana Julia';
     this.reminders = true;
 
@@ -20,7 +22,7 @@ export class OnboardingView {
     this._setupDOMListeners();
   }
 
-  _getDefaultStartDate(daysAgo = 4) {
+  _getDefaultStartDate(daysAgo = 2) {
     const d = new Date();
     d.setDate(d.getDate() - daysAgo);
     return d.toISOString().split('T')[0];
@@ -71,6 +73,31 @@ export class OnboardingView {
       return `${this.cycleDays} dias`;
     }, 28);
 
+    // Checkbox de ciclo desconhecido
+    const checkUnknown = document.getElementById('checkUnknownCycle');
+    const cardCycle = document.getElementById('cardCycleLength');
+    if (checkUnknown) {
+      checkUnknown.addEventListener('change', (e) => {
+        this.isUnknownCycle = e.target.checked;
+        if (cardCycle) {
+          cardCycle.style.opacity = this.isUnknownCycle ? '0.45' : '1';
+          cardCycle.style.pointerEvents = this.isUnknownCycle ? 'none' : 'auto';
+        }
+      });
+    }
+
+    // Pílulas de contracepção
+    const pillsContainer = document.getElementById('contraceptivePills');
+    if (pillsContainer) {
+      pillsContainer.addEventListener('click', (e) => {
+        const pill = e.target.closest('.pill-opt');
+        if (!pill) return;
+        pillsContainer.querySelectorAll('.pill-opt').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        this.selectedContraceptive = pill.dataset.val || 'none';
+      });
+    }
+
     // Switch de lembretes
     const reminderSwitch = document.getElementById('switchReminders');
     if (reminderSwitch) {
@@ -120,7 +147,6 @@ export class OnboardingView {
     });
 
     if (this.progressBar) {
-      // Ajusta barra de progresso (a partir da etapa de perguntas)
       if (index >= 2 && index <= 5) {
         const progress = ((index - 1) / (totalWizardSteps - 1)) * 100;
         this.progressBar.style.width = `${progress}%`;
@@ -226,6 +252,8 @@ export class OnboardingView {
             lastPeriodDate: this.selectedDate,
             periodDays: this.periodDays,
             cycleDays: this.cycleDays,
+            isUnknownCycle: this.isUnknownCycle,
+            contraceptive: this.selectedContraceptive,
             reminders: this.reminders
           });
           this.hide();

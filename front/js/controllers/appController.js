@@ -65,11 +65,13 @@ export class AppController {
         },
         onComplete: (data) => {
           // 1. Recalcula o ciclo real a partir da data de início informada
-          this.models.cycle.setupInitialCycle(
-            data.lastPeriodDate,
-            data.cycleDays,
-            data.periodDays
-          );
+          this.models.cycle.setupInitialCycle({
+            startDateStr: data.lastPeriodDate,
+            cycleLength: data.cycleDays,
+            periodLength: data.periodDays,
+            isUnknownCycle: data.isUnknownCycle,
+            contraceptive: data.contraceptive
+          });
 
           // 2. Conclui onboarding no perfil
           this.models.user.completeOnboarding({
@@ -108,11 +110,18 @@ export class AppController {
       this.views.calendar.render(viewDate, cycleInfo);
     });
 
-    // Salvar registro de sintomas
-    this.views.logSheet.bindSave((selectedSymptoms) => {
+    // Salvar registro de sintomas completo
+    this.views.logSheet.bindSave((logData) => {
       const todayStr = new Date().toISOString().split('T')[0];
-      this.models.cycle.saveDailyLog(todayStr, { symptoms: selectedSymptoms });
-      this.views.logSheet.showToast('Registro salvo com sucesso 💗');
+      this.models.cycle.saveDailyLog(todayStr, logData);
+      
+      // Se registrou fluxo menstrual e o dia atual era fora da menstruação, atualiza cálculos
+      if (logData.flow && ['light', 'medium', 'heavy'].includes(logData.flow.value)) {
+        this._renderCurrentCycle();
+        this._initCalendar();
+      }
+      
+      this.views.logSheet.showToast('Registro completo salvo com sucesso 💗');
     });
 
     // Toggle de tema

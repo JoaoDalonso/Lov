@@ -1,6 +1,6 @@
 /**
  * Model: CycleModel
- * Responsável pelas regras de negócio do ciclo menstrual, cálculos e persistência no padrão MVC.
+ * Gerencia as regras de negócio biológicas, cálculos de previsão e registro detalhado de sintomas.
  */
 export class CycleModel {
   constructor() {
@@ -13,8 +13,10 @@ export class CycleModel {
       period: 5,
       ovulation: 14,
       fertile: [10, 15],
-      todayCycleDay: 5,
-      lastPeriodStartDate: this._getCalculatedStartDate(5)
+      todayCycleDay: 2,
+      isCycleLengthUnknown: false,
+      lastPeriodStartDate: this._getCalculatedStartDate(2),
+      contraceptiveMethod: 'none' // 'pill' | 'iud' | 'condom' | 'none'
     };
 
     this.cycle = this._loadCycle();
@@ -56,10 +58,16 @@ export class CycleModel {
   }
 
   /**
-   * Configura o ciclo dinamicamente a partir dos dados do Onboarding
+   * Configuração inicial a partir do Onboarding ou ajuste de perfil
    */
-  setupInitialCycle(startDateStr, cycleLength = 28, periodLength = 5) {
-    const cleanCycleLength = Math.max(21, Math.min(45, parseInt(cycleLength, 10) || 28));
+  setupInitialCycle({
+    startDateStr,
+    cycleLength = 28,
+    periodLength = 5,
+    isUnknownCycle = false,
+    contraceptive = 'none'
+  }) {
+    const cleanCycleLength = isUnknownCycle ? 28 : Math.max(21, Math.min(45, parseInt(cycleLength, 10) || 28));
     const cleanPeriodLength = Math.max(2, Math.min(10, parseInt(periodLength, 10) || 5));
 
     const now = new Date();
@@ -85,6 +93,8 @@ export class CycleModel {
       ovulation,
       fertile: [fertileStart, fertileEnd],
       todayCycleDay,
+      isCycleLengthUnknown: isUnknownCycle,
+      contraceptiveMethod: contraceptive,
       lastPeriodStartDate: startDate.toISOString().split('T')[0]
     };
 
@@ -118,12 +128,19 @@ export class CycleModel {
       phase,
       phaseColor,
       daysRemaining,
+      isCycleLengthUnknown: this.cycle.isCycleLengthUnknown,
+      contraceptiveMethod: this.cycle.contraceptiveMethod,
       lastPeriodStartDate: this.cycle.lastPeriodStartDate
     };
   }
 
+  /**
+   * Salva o registro completo diário de sintomas físicos, humor, TBC, muco e estilo de vida
+   */
   saveDailyLog(dateStr, logData) {
+    const current = this.logs[dateStr] || {};
     this.logs[dateStr] = {
+      ...current,
       ...logData,
       updatedAt: new Date().toISOString()
     };
@@ -132,7 +149,21 @@ export class CycleModel {
   }
 
   getDailyLog(dateStr) {
-    return this.logs[dateStr] || null;
+    return this.logs[dateStr] || {
+      flow: null,
+      pain: [],
+      cervicalMucus: null,
+      bbt: 36.5,
+      mood: [],
+      sex: [],
+      contraception: [],
+      lifestyle: {
+        sleepHours: 8,
+        waterGlasses: 6,
+        exercise: null,
+        stress: 'medium'
+      }
+    };
   }
 
   getThemePreference() {
@@ -149,6 +180,7 @@ export class CycleModel {
       { name: 'Cólica', percent: 82 },
       { name: 'Cansaço', percent: 68 },
       { name: 'Inchaço', percent: 55 },
+      { name: 'Sensibilidade nos seios', percent: 48 },
       { name: 'Dor de cabeça', percent: 40 },
       { name: 'Acne', percent: 31 }
     ];
